@@ -1,0 +1,82 @@
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{% url 'mypage:index' %}" style="color:orange;">M<span style="color:deepskyblue">N</span></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            {% comment %}<ul class="navbar-nav">
+                <li {% if '/mycouch/' in request.build_absolute_uri %} class="nav-item active"{% endif %}>
+                    <a class="nav-link" href="{% url 'mypage:profile' %}">My Couch</a>
+                </li>
+            </ul>{% endcomment %}
+            <ul class="navbar-nav">
+
+                    <li {% if 'profile' in request.build_absolute_uri %} class="nav-item active" {% else %} class="nav-item"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:profile' %}"><i class="fas fa-home fa-lg"></i> My Profile</a>
+                    </li>
+                    <li {% if 'movienight' in request.build_absolute_uri %} class="nav-item active" {% else %} class="nav-item"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:movienight' %}"><i class="fas fa-film fa-lg"></i> MovieNight</a>
+                    </li>
+                    <li {% if 'backlog' in request.build_absolute_uri %} class="nav-item active" {% else %} class="nav-item"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:backlog' %}"><i class="fas fa-history fa-lg"></i> Backlog</a>
+                    </li>
+                    <li {% if 'lists' in request.build_absolute_uri %} class="nav-item active" {% else %} class="nav-item"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:lists' %}"><i class="fas fa-list fa-lg"></i> Lists</a>
+                    </li>
+
+            </ul>
+            {% if user.is_authenticated %}
+
+
+
+                <ul class="navbar-nav ml-auto mr-4">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user"></i> {{ user.get_username }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="#"><i class="fas fa-envelope"></i> Inbox</a>
+                            <a class="dropdown-item" href="{% url 'mypage:settings' %}"><i class="fas fa-cog" aria-hidden="true"></i> Settings</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'mypage:logout' %}"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            {% endif %}
+
+        </div>
+    </nav>
+    <div style="background:deepskyblue;height:1px;"></div>
+    {% if '/mycouch/' in request.build_absolute_uri %}
+
+
+        {% comment %}<nav class="navbar navbar-expand-lg navbar-dark col-lg-12">
+            <ul class="navbar-nav mx-auto">
+                <div class="row ml-2 mr-2">
+                    <li {% if 'profile' in request.build_absolute_uri %} class="nav-item active ml-2 mr-2" {% else %} class="ml-2 mr-2"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:profile' %}"><i class="fas fa-home fa-lg"></i> My Profile</a>
+                    </li>
+                    <li {% if 'movienight' in request.build_absolute_uri %} class="nav-item active ml-2 mr-2" {% else %} class="ml-2 mr-2"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:movienight' %}"><i class="fas fa-film fa-lg"></i> MovieNight</a>
+                    </li>
+                    <li {% if 'backlog' in request.build_absolute_uri %} class="nav-item active ml-2 mr-2" {% else %} class="ml-2 mr-2"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:backlog' %}"><i class="fas fa-history fa-lg"></i> Backlog</a>
+                    </li>
+                    <li {% if 'lists' in request.build_absolute_uri %} class="nav-item active ml-2 mr-2" {% else %} class="ml-2 mr-2"{% endif %}>
+                        <a class="nav-link" href="{% url 'mypage:lists' %}"><i class="fas fa-list fa-lg"></i> Lists</a>
+                    </li>
+                </div>
+            </ul>
+        </nav>
+            <div {% if 'profile' in request.build_absolute_uri %} class="bg-success col-lg-12 mx-auto"
+            {% elif 'movienight' in request.build_absolute_uri %} class="bg-info col-lg-12 mx-auto"
+            {% elif 'backlog' in request.build_absolute_uri %} class="bg-danger col-lg-12 mx-auto"
+            {% elif 'lists' in request.build_absolute_uri %} class="bg-warning col-lg-12 mx-auto"
+            {% endif %} style="width:500px">
+            </div>
+        {% endcomment %}
+
+    {% endif %}
+
+

@@ -1,0 +1,118 @@
+{% extends 'mypage/base.html' %}
+{% block title %} {{ movienight.title }} - MovieNight Event {% endblock %}
+{% load static %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="col-lg-12 mt-3">
+            <h1 style="color:deepskyblue">{{ movienight.title }}</h1>
+            <p class="text-muted">Created {{ movienight.creation_date }} by <a href="/user/{{ movienight.creator.username }}">{{ movienight.creator.username }}</a></p>
+            <hr class="bg-secondary">
+        </div>
+    </div>
+
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="mx-auto">
+                    <p class="text-light">DSGg dsggs dgsd gsdG SDG DSG DSGSDG sdgdsgsdgödg kdsgdsög dsögsdgödsg GSDGSDGSDGSDGsdgsdgsdGSDGSD. GDSGSG Gsdgs gsDGSGASfea tEATETEs! GSRg sRTSTSTststST.</p>
+                    <img class="img-fluid" src="{% static 'mypage/images/theater.jpg' %}" alt="" style="max-height:500px">
+                </div>
+                <div class="mt-5  mb-5 mx-auto">
+                    <h5 class="bg-dark text-light mb-0 p-1 border border-light">CHAT</h5>
+                    <div class="bg-light mb-1" style="max-height:150px;overflow:scroll">
+                        <p>User1: Hallå</p>
+                        <p>User2: Hej där!</p>
+                        <p>User3: Trevligt...</p>
+                        <p>User2: Jo rätt så.</p>
+                        <p>User3: Ja det tycker jag.</p>
+                    </div>
+                    <div class="input-group">
+                        <input class="form-control col-lg-5" type="text" placeholder="Write your message...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="button" id="searchBtn" name="singleResultBtn" value="1">Send</button>
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-4">
+                <div class="mb-4">
+                    <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#eventSettingsModal">Event settings</button>
+                    <button class="btn btn-outline-success">+ Invite user</button>
+                </div>
+                <div class="mt-4">
+                    <h5 class="bg-secondary">WHEN & WHERE</h5>
+                    <span class="text-light">Jan 14, 2018, 19:00 <span class="text-muted">@</span> Hittepåvägen 17, 400 40</span>
+                </div>
+
+                <div class="mt-4">
+                    <h5 style="background:limegreen">PARTICIPANTS</h5>
+                    <a href="#" class="text-white">{{ movienight.creator.username }} <span style="color:deepskyblue">(Creator)</span></a>
+                </div>
+                <div>
+                    <a href="#" class="text-white">Another user</a>
+                </div>
+                <div>
+                    <a href="#" class="text-white">Another user</a>
+                </div>
+                <div class="mt-4">
+                    <h5 style="background:orange">SUBMITTED MOVIE LISTS</h5>
+                    <a href="#" class="text-white">Movie list by <span style="color:limegreen">some user</span></a>
+                </div>
+                <div>
+                    <a href="#" class="text-white">Movie list by <span style="color:limegreen">some user</span></a>
+                </div>
+                <div>
+                    <a href="#" class="text-white">Movie list by <span style="color:limegreen">some user</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal -->
+<div class="modal fade" id="eventSettingsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h5 class="modal-title" id="exampleModalLabel">Event settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark">
+        <form class="form-horizontal" role="form" action="." method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label class="control-label col-sm-12 text-muted">Event description:</label>
+                        <div class="col-sm-12">
+                            <textarea cols="35" rows="5" name="eventname" placeholder="Description..." style="resize:none;overflow-x: hidden;"></textarea>
+                        </div>
+                        <br><label class="control-label col-sm-12 text-muted">Image upload:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="eventname" placeholder="URL to image...">
+                        </div>
+                        <br><label class="control-label col-sm-12 text-muted">Max number of movies users can nominate:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="nrmovies" placeholder="Enter a number...">
+                        </div>
+                        <br>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary">Create event!</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+      </div>
+      <div class="modal-footer bg-dark">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'mypage/base.html' %}
+{% block title %} {{ user.get_username }} Profile Page {% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="col-lg-8 mb-5 mt-5 ml-4">
+            <h1 style="color:white">Settings</h1>
+            <hr class="bg-secondary">
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-sm-4 col-lg-6">
+            <form class="form-horizontal" role="form" action="." method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label class="control-label col-sm-6 text-muted">Email</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="username" value="{{ user.email }}">
+                        </div>
+                        <br>
+                        <label class="control-label col-sm-6 text-muted">Change password</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="password" name="password" placeholder="Current password">
+                        </div>
+                        <br>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="password" name="password" placeholder="New password">
+                        </div>
+                        <br>
+                        <div class="col-sm-10">
+                            <button class="btn btn-success" type="submit">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

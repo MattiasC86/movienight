@@ -1,0 +1,91 @@
+{% extends 'mypage/base.html' %}
+{% block title %} {{ movie.title }} ({{ movie.release_year }}) {% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="row mt-5">
+            <div>
+                <img src="{{ movie.poster }}" alt="">
+            </div>
+            <div class="col-lg-6">
+                <h1 style="color:deepskyblue">{{ movie.title }} </h1>
+                <button class="btn btn-success btn-sm" name="{{ movie.pk }}">Add reminder</button>
+                <button class="btn btn-danger btn-sm delBacklogBtn" name="{{ movie.pk }}">Delete from backlog</button>
+                <hr class="bg-secondary">
+                <span class="text-muted">Release year: </span><span class="text-white">{{ movie.release_year }}</span>
+                <br><span class="text-muted">Director: </span><span class="text-white">{{ movie.director }}</span>
+                <br><span class="text-muted">Plot:</span>
+                <p class="text-white">{{ movie.plot }}</p>
+            </div>
+        </div>
+        
+    </div>
+
+
+    <script>
+$(function() {
+    //CSRF
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+
+    $(".delBacklogBtn").click(function() {
+        var backlogToDelete =  $(this).attr('name');
+        console.log('clicked to remove backlog with movie.pk ' + backlogToDelete);
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        $.ajax({
+            url : 'delete/',
+            type : "POST",
+            data : { backlogToDelete: backlogToDelete}
+        }).done(function(returned_data){
+            window.location.href = '{% url 'mypage:backlog' %}';
+
+        });
+    });
+    $("#addBacklogBtn").click(function() {
+        console.log('clicked img to save backlog');
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        $.ajax({
+            url : 'add/',
+            type : "POST",
+            data : { title: '{{ movie.Title }}', director: '{{ movie.Director }}', year: '{{ movie.Year }}', poster : '{{ movie.Poster }}', plot: '{{ movie.Plot }}' }
+        }).done(function(returned_data){
+            window.location.href = '{% url 'mypage:backlog' %}';
+
+        });
+    });
+});
+    </script>
+
+{% endblock %}

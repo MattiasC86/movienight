@@ -1,0 +1,144 @@
+{% extends 'mypage/base.html' %}
+
+
+{% block body %}
+{% comment %}{% include 'mypage/mycouch_navbar.html' %}{% endcomment %}
+
+
+
+
+    <div class="container ml-0 mt-3 p-4">
+    <div class="col-lg-10 mb-5">
+        <h class="display-4" style="color:deeppink">My Backlog</h>
+        <hr class="bg-secondary">
+    </div>
+
+        <div class="col-lg-6" id="searchMovie">
+            <h4 class="text-white">Search movie</h4>
+            <form class="form" method="POST" action=".">
+                {% csrf_token %}
+
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Movie title..." id="titleinput" name="titleinput" value="{{ titleinput }}">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="submit" id="searchBtn">Go!</button>
+                        </span>
+                    </div>
+
+            </form>
+        </div>
+
+
+
+        {% if movie %}
+            <br>
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card border bg-dark border-dark" style="width: 14rem;">
+                    <h5 class="text-center p-2" style="background-color:deepskyblue;">{{ movie.Title }} ({{ movie.Year }})</h5>
+                    <div class="card-body text-secondary">
+
+                        <img class="card-img-top" src="{{ movie.Poster }}" alt="(Could not find an image)"
+                        data-toggle="tooltip" data-html="true" title="{{ movie.Plot }}">
+
+                    </div>
+                    <button class="btn btn-light my-1 my-sm-0" type="submit" name="mybtn">Add to Backlog</button>
+                </div>
+            </div>
+
+        {% endif %}
+
+        {% if movies %}
+            <br>
+            <div class="row">
+                {% for m in movies %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3" style="margin-bottom:15px">
+                        <div class="card  border border-warning" style="width: 12rem;">
+                            <div class="card-body alert-secondary">
+                                <h6>{{ m.Title }} ({{ m.Year }})</h6>
+                                <img class="card-img-top" src="{{ m.Poster }}" alt="(Could not find an image)">
+
+                            </div>
+
+                            <button class="btn btn-outline-success my-1 my-sm-0" type="submit" name="mybtn">Add to favorites</button>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        //CSRF
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        var title;
+        $("#titleinput").change(function () {
+            title = $(this).val();
+        });
+
+        // Show one title
+        {% comment %}$("#searchBtn").click(function() {
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $.ajax({
+                method: "POST",
+                url: "getmovie/",
+                data: {'title': title},
+                success: function(data) {
+                    console.log(data) // check out how data is structured
+
+                    // Update the coin amount
+                    //$('.status').contents()[0].textContent = 'Balance&nbsp'+data.coins
+                    }
+            })
+        });{% endcomment %}
+
+        // Show all titles
+        {% comment %}$("#searchAllBtn").click(function() {
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $.ajax({
+                method: "POST",
+                url: "getmovies/",
+                data: {'title': title},
+                success: function(data) {
+                    console.log(data) // check out how data is structured
+
+                    // Update the coin amount
+                    //$('.status').contents()[0].textContent = 'Balance&nbsp'+data.coins
+                    }
+            })
+        });{% endcomment %}
+    </script>
+
+{% endblock %}

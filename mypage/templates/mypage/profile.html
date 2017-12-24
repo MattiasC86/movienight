@@ -1,0 +1,25 @@
+{% extends 'mypage/base.html' %}
+{% block title %} {{ user.get_username }} Profile Page {% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="col-lg-12 mb-5 mt-3">
+            <h1 style="color:limegreen">{{ user.get_username }}</h1>
+            <p class="text-muted">MovieNight member since {{ user.date_joined }}</p>
+            <span class="text-white"><span style="color:deepskyblue">ACTIVE MOVIENIGHT EVENTS:</span> {{ movienightLength }}</span>
+            <span class="text-muted ml-2 mr-2">-</span>
+            <span class="text-white"><span style="color:deeppink">MOVIES IN BACKLOG:</span> {{ backlogLength }}</span>
+            <span class="text-muted ml-2 mr-2">-</span>
+            <span class="text-white"><span style="color:orange">LISTS CREATED:</span> 0</span>
+            <hr class="bg-secondary">
+        </div>
+    </div>
+    <div class="container">
+        <div class="row ml-1">
+            <div class="col-sm-4 col-lg-4">
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
