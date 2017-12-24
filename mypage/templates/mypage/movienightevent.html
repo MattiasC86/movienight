@@ -7,7 +7,7 @@
     <div class="container">
         <div class="col-lg-12 mt-3">
             <h1 style="color:deepskyblue">{{ movienight.title }}</h1>
-            <p class="text-muted">Created {{ movienight.creation_date }} by <a href="/user/{{ movienight.creator.username }}">{{ movienight.creator.username }}</a></p>
+            <p class="text-muted">Created {{ movienight.creation_date }} by <a href="/user/{{ movienight.creator.username }}" style="color:limegreen">{{ movienight.creator.username }}</a></p>
             <hr class="bg-secondary">
         </div>
     </div>
@@ -38,10 +38,12 @@
                 </div>
             </div>
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-4">
+                {% if movienight.creator == request.user %}
                 <div class="mb-4">
                     <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#eventSettingsModal">Event settings</button>
                     <button class="btn btn-outline-success">+ Invite user</button>
                 </div>
+                {% endif %}
                 <div class="mt-4">
                     <h5 class="bg-secondary">WHEN & WHERE</h5>
                     <span class="text-light">Jan 14, 2018, 19:00 <span class="text-muted">@</span> Hittepåvägen 17, 400 40</span>
@@ -49,14 +51,13 @@
 
                 <div class="mt-4">
                     <h5 style="background:limegreen">PARTICIPANTS</h5>
-                    <a href="#" class="text-white">{{ movienight.creator.username }} <span style="color:deepskyblue">(Creator)</span></a>
+                    <a href="/user/{{ movienight.creator.username }}" class="text-white">{{ movienight.creator.username }} <span style="color:deepskyblue">(Creator)</span></a>
                 </div>
-                <div>
-                    <a href="#" class="text-white">Another user</a>
-                </div>
-                <div>
-                    <a href="#" class="text-white">Another user</a>
-                </div>
+                {% for u in movienight.users.all %}
+                    <div>
+                        <a href="/user/{{ u.username }}" class="text-white">{{ u.username }}</a>
+                    </div>
+                {% endfor %}
                 <div class="mt-4">
                     <h5 style="background:orange">SUBMITTED MOVIE LISTS</h5>
                     <a href="#" class="text-white">Movie list by <span style="color:limegreen">some user</span></a>

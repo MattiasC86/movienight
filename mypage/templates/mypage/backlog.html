@@ -16,7 +16,24 @@
             <div class="row ml-1">
 
                 <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                    <h5 style="background:deeppink">ADDED MOVIES:</h5>
+                    <div class="searchDiv">
+                        <br>
+                        <h5 class="text-black" style="background:deeppink">ADD MOVIE</h5>
+                        <form class="form" method="POST" action=".">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search movie title..." id="titleinput" name="titleinput" value="{{ titleinput }}">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-secondary" type="submit" id="searchBtn" name="singleResultBtn" value="1">Go!</button>
+                                </span>
+                            </div>
+                            {% if movie %}
+                            <button class="btn btn-dark" type="submit" name="multipleResultsBtn" value="1">Show more results...</button>
+                            {% endif %}
+                        </form>
+                        <br>
+                    </div>
+                    <h5 style="background:deeppink">BACKLOG</h5>
                     {% if m_backlog %}
                     {% for m in m_backlog %}
                         <div>
@@ -26,24 +43,7 @@
                         {% else %}
                         <p class="lead text-muted">You haven't added any movies to your Backlog yet! Get started by searching for a movie title and adding it to your Backlog.</p>
                     {% endif %}
-                    <div class="searchDiv">
-                        <br>
-                        <h5 class="text-black" style="background:deeppink">SEARCH FOR MOVIE:</h5>
-                        <form class="form" method="POST" action=".">
-                            {% csrf_token %}
 
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Movie title..." id="titleinput" name="titleinput" value="{{ titleinput }}">
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-secondary" type="submit" id="searchBtn" name="singleResultBtn" value="1">Go!</button>
-                                    </span>
-                                </div>
-                                {% if movie %}
-                                <button class="btn btn-dark" type="submit" name="multipleResultsBtn" value="1">Show more results...</button>
-                                {% endif %}
-                        </form>
-                        <br>
-                    </div>
                 </div>
 
                 {% if movie %}

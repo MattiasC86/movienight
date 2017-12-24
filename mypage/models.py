@@ -33,10 +33,10 @@ class MovieBacklog(models.Model):
 class MovieNight(models.Model):
     title = models.CharField(max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
-    # date = models.DateTimeField()
+    date = models.DateTimeField(default=timezone.now)
     list_size = models.IntegerField()
     creator = models.ForeignKey(User)
-    # users = models.ManyToManyField(User)
+    users = models.ManyToManyField(User, related_name="participants")
 
     def __str__(self):
         return self.title + ' created by ' + self.creator.username

@@ -136,18 +136,15 @@ def movienight(request):
         if request.method == 'POST':
             title = request.POST.get('eventname', None)
             list_size = request.POST.get('nrmovies', None)
-            print(title)
-            print(list_size)
-            print(request.user)
             new_movienight = MovieNight(title=title, list_size=list_size, creator=request.user)
             new_movienight.save()
-            print(new_movienight.pk)
             return redirect(reverse('mypage:movienight_event', kwargs={"pk": new_movienight.pk}))
             # return redirect('/movienightevent/' + title + '/', {'movienight': new_movienight})
         else:
             # TODO: change creator to 'users' or somthing to include all
-            active_movienights = MovieNight.objects.filter(creator=request.user)
-            return render(request, 'mypage/movienight.html', {'a_movienights': active_movienights})
+            created_movienights = MovieNight.objects.filter(creator=request.user)
+            participant_movienights = MovieNight.objects.filter(users=request.user)
+            return render(request, 'mypage/movienight.html', {'created_movienights': created_movienights, 'participant_movienights': participant_movienights})
     else:
         return redirect('mypage:login')
 

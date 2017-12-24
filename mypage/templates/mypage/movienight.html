@@ -18,15 +18,19 @@
         <div class="row ml-1">
             <div class="col-xs-12 col-sm-8 col-md-6 col-lg-5">
                 <button class="btn btn-dark btn-lg mb-4" data-toggle="modal" data-target="#newEventModal">Create new Event!</button>
-                <h5 style="background:deepskyblue">ACTIVE EVENTS:</h5>
-                {% if a_movienights %}
-                    {% for a_movienight in a_movienights %}
-                        <p class="text-muted">{{ a_movienight.creation_date }} -> <a href="/movienightevent/{{ a_movienight.pk }}" style="color:deepskyblue"> {{ a_movienight.title }}</a></p>
+                <h5 style="background:deepskyblue">ACTIVE EVENTS</h5>
+                {% if created_movienights %}
+                    <p style="color:deepskyblue">CREATOR:</p>
+                    {% for c_movienight in created_movienights %}
+                        <p class="text-muted">{{ c_movienight.creation_date }} -> <a href="/movienightevent/{{ c_movienight.pk }}" style="color:deepskyblue"> {{ c_movienight.title }}</a></p>
                     {% endfor %}
                 {% endif %}
-            </div>
-            <div class="col-lg-9">
-
+                <p style="color:deepskyblue">PARTICIPANT:</p>
+                {% for p_movienight in participant_movienights %}
+                    <p class="text-muted">{{ p_movienight.creation_date }} -> <a href="/movienightevent/{{ p_movienight.pk }}" style="color:deepskyblue"> {{ p_movienight.title }}</a>
+                        created by <a href="/user/{{ p_movienight.creator.username }}" style="color:limegreen">{{ p_movienight.creator.username }}</a></p>
+                {% endfor %}
+                <h5 style="background:deepskyblue">PAST EVENTS</h5>
             </div>
         </div>
     </div>
