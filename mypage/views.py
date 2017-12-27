@@ -9,8 +9,7 @@ from django.views.generic import View
 from .forms import UserForm
 
 from .external_http_requests import get_by_title, search_by_title
-from .models import Movie, MovieNight
-from .models import MovieBacklog
+from .models import Movie, MovieNight, MovieNightList, MovieBacklog
 
 
 # Public profile
@@ -148,20 +147,51 @@ def movienight(request):
     else:
         return redirect('mypage:login')
 
-
-
-
-
 def movienight_event(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
+    if request.method == 'POST':
+        # event settings
+        if request.POST['action'] == 'settings':
+            selected_movienight.description = request.POST.get('description')
+            selected_movienight.decoration_url = request.POST.get('decoration')
+            selected_movienight.list_size = request.POST.get('nrmovies')
+            selected_movienight.save()
+            return redirect('/movienightevent/' + pk)
     return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight})
 
+def movienight_list(request, pk, username):
+    if request.method == 'POST':
+        print('POST')
+        moviepk = request.POST.get('movieToDelete', None)
+        movielistpk = request.POST.get('movieList', None)
+
+        try:
+            movie = Movie.objects.get(pk=moviepk)
+        except Movie.DoesNotExist:
+            movie = None
+
+        try:
+            movie_list = MovieNightList.objects.get(pk=movielistpk)
+        except MovieNightList.DoesNotExist:
+            movie_list = None
+
+        if movie:
+            print('movie exists. Will now delete.')
+            movie_list.movies_set.remove(movie)
+        # TODO else: Send msg back to client
+
+        # TODO: Send httprequest back, this one isnt rendering anyway, ajax is in template file...
+        return render(request, 'mypage/movienight.html')
+
+    selected_movienight = MovieNight.objects.get(pk=pk)
+    selected_user = User.objects.get(username=username)
+    movie_list = MovieNightList.objects.get(user=selected_user, movienight=selected_movienight)
+    return render(request, 'mypage/movienight_list.html', {'movienight': selected_movienight, 'user': selected_user, 'list':movie_list})
 
 def backlog(request):
     if request.user.is_authenticated:
         if request.method == 'POST':
             if request.POST.get('singleResultBtn'):
-                print('YES IT WAS PUSSHH')
                 title_input = request.POST.get('titleinput', None)
                 movie = get_by_title(title_input)
                 # movies = search_by_title(title_input)

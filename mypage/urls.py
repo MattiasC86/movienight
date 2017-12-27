@@ -38,6 +38,10 @@ urlpatterns = [
     # /mycouch/movienight
     url(r'^mycouch/movienight/', views.movienight, name='movienight'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/$', views.movienight_event, name='movienight_event'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/settings/$', views.movienight_event, name='movienight_event_settings'),
+    # movielist
+    url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/$', views.movienight_list, name='movienight_list'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/delete/$', views.delete_backlog, name='delete_backlog'),
 
 
 
