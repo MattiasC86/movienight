@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 #class User(AbstractUser):
@@ -8,7 +9,14 @@ from django.contrib.auth.models import User
 #    def __str__(self):
 #        return self.username + ' (' + self.email + ')'
 from django.db.models.functions import datetime
-from django.utils import timezone
+
+
+class Friends(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='first_user')
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='second_user')
+
+    def __str__(self):
+        return self.user.username + ' - ' + self.user2.username
 
 
 class Movie(models.Model):
@@ -45,7 +53,10 @@ class MovieNight(models.Model):
 
 
 class MovieNightList(models.Model):
-    user = models.ForeignKey(User)
-    movienight = models.ForeignKey(MovieNight)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    movienight = models.ForeignKey(MovieNight, on_delete=models.CASCADE)
     movies = models.ManyToManyField(Movie)
+
+    def __str__(self):
+        return self.movienight.title + ' - ' + self.user.username
 

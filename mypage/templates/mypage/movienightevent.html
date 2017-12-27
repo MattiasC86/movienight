@@ -42,6 +42,10 @@
                 <div class="mb-4">
                     <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#eventSettingsModal">Event settings</button>
                     <button class="btn btn-outline-success">+ Invite user</button>
+                    <form method="post" action="{{ request.build_absolute_uri }}delete">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger" type="submit">Delete event</button>
+                    </form>
                 </div>
                 {% endif %}
                 <div class="mt-4">

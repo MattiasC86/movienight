@@ -147,6 +147,7 @@ def movienight(request):
     else:
         return redirect('mypage:login')
 
+
 def movienight_event(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
     if request.method == 'POST':
@@ -158,6 +159,12 @@ def movienight_event(request, pk):
             selected_movienight.save()
             return redirect('/movienightevent/' + pk)
     return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight})
+
+
+def delete_movienight(request, pk):
+    selected_movienight = MovieNight.objects.get(pk=pk)
+    selected_movienight.delete()
+    return redirect('mypage:movienight')
 
 def movienight_list(request, pk, username):
     if request.method == 'POST':
