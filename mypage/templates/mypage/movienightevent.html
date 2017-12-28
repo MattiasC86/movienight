@@ -62,8 +62,10 @@
                         <a href="/user/{{ u.username }}" class="text-white">{{ u.username }}</a>
                     </div>
                 {% endfor %}
-                <div class="mt-4">
+                <div class="mt-4 mb-4">
                     <h5 style="background:orange">SUBMITTED MOVIE LISTS</h5>
+                    <p style="color:orange">Max number of movies to nominate per user: {{ movienight.list_size }}</p>
+                    <a href="{{ request.user.username }}/" class="text-white">Edit your movie list!</a>
                 </div>
                 {% for u in movienight.users.all %}
                     <div>

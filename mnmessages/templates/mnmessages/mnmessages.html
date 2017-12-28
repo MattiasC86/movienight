@@ -1,0 +1,46 @@
+{% extends 'mypage/base.html' %}
+{% block title %} Backlog - Manage your backlog {% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="col-lg-12 mt-4">
+            <h1 style="color:deeppink">Messages</h1>
+            <hr class="bg-secondary">
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="">Write new message</a>
+        <h5 class="text-light">Messages</h5>
+        {% for m in all_messages %}
+            <div class="col-lg-6" id="message{{ m.pk }}">
+                <a href="#" class="link" id="{{ m.pk }}">Title: {{ m.title }}, Sender: {{ m.sender.username }}, {{ m.date }}</a>
+                <div class="content bg-white text-dark" id="content{{ m.pk }}" style="display:none">
+                    <p>{{ m.message }}</p>
+                    <button>Respond</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        $(function() {
+
+
+            $(".link").click(function() {
+                var messagePk = $(this).attr('id');
+
+                var isVisible = $("#content" + messagePk).is(':visible');
+
+                if(isVisible) {
+                    $("#content" + messagePk).hide();
+                } else {
+                    $(".content").hide();
+                    $("#content" + messagePk).show();
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

@@ -192,7 +192,11 @@ def movienight_list(request, pk, username):
 
     selected_movienight = MovieNight.objects.get(pk=pk)
     selected_user = User.objects.get(username=username)
-    movie_list = MovieNightList.objects.get(user=selected_user, movienight=selected_movienight)
+    try:
+        movie_list = MovieNightList.objects.get(user=selected_user, movienight=selected_movienight)
+    except MovieNightList.DoesNotExist:
+        movie_list = None
+
     return render(request, 'mypage/movienight_list.html', {'movienight': selected_movienight, 'user': selected_user, 'list':movie_list})
 
 def backlog(request):

@@ -20,6 +20,7 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('mypage.urls', namespace='mypage')),
+    url(r'^messages', include('mnmessages.urls', namespace='messages')),
     #url(r'^mypage/', include('mypage.urls', namespace='mypage')),
 
 ]
