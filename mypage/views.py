@@ -10,6 +10,7 @@ from .forms import UserForm
 
 from .external_http_requests import get_by_title, search_by_title
 from .models import Movie, MovieNight, MovieNightList, MovieBacklog
+from mnmessages.models import Message
 
 
 # Public profile
@@ -97,13 +98,15 @@ class UserFormView(View):
 
 # Create your views here.
 def index(request):
-    #all_albums = Album.objects.all()
-    #return render(request, 'mypage/index.html', {'all_albums': all_albums})
-    return render(request, 'mypage/index.html')
+    if request.user.is_authenticated:
+        unread_messages = Message.objects.filter(recipient=request.user, read=False)
+        return render(request, 'mypage/index.html', {'unread': unread_messages})
+    return render(request, 'mypage/index.html',)
 
 
 def profile(request):
     if request.user.is_authenticated:
+        unread_messages = Message.objects.filter(recipient=request.user, read=False)
         try:
             movienight_length = len(MovieNight.objects.filter(creator=request.user))
         except MovieNight.DoesNotExist:
@@ -114,24 +117,28 @@ def profile(request):
         except MovieBacklog.DoesNotExist:
             backlog_length = 0
 
-        return render(request, 'mypage/profile.html', {'backlogLength': backlog_length, 'movienightLength': movienight_length})
+        return render(request, 'mypage/profile.html', {'backlogLength': backlog_length, 'movienightLength': movienight_length,
+                                                       'unread': unread_messages})
     else:
         return redirect('mypage:login')
 
 
 def lists(request):
     if request.user.is_authenticated:
-        return render(request, 'mypage/lists.html')
+        unread_messages = Message.objects.filter(recipient=request.user, read=False)
+        return render(request, 'mypage/lists.html', {'unread': unread_messages})
     else:
         return redirect('mypage:login')
 
 
 def settings(request):
+    unread_messages = Message.objects.filter(recipient=request.user, read=False)
     return render(request, 'mypage/settings.html')
 
 
 def movienight(request):
     if request.user.is_authenticated:
+        unread_messages = Message.objects.filter(recipient=request.user, read=False)
         if request.method == 'POST':
             title = request.POST.get('eventname', None)
             list_size = request.POST.get('nrmovies', None)
@@ -143,7 +150,8 @@ def movienight(request):
             # TODO: change creator to 'users' or somthing to include all
             created_movienights = MovieNight.objects.filter(creator=request.user)
             participant_movienights = MovieNight.objects.filter(users=request.user)
-            return render(request, 'mypage/movienight.html', {'created_movienights': created_movienights, 'participant_movienights': participant_movienights})
+            return render(request, 'mypage/movienight.html', {'created_movienights': created_movienights, 'participant_movienights': participant_movienights,
+                                                              'unread': unread_messages})
     else:
         return redirect('mypage:login')
 
@@ -165,6 +173,7 @@ def delete_movienight(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
     selected_movienight.delete()
     return redirect('mypage:movienight')
+
 
 def movienight_list(request, pk, username):
     if request.method == 'POST':
@@ -201,6 +210,7 @@ def movienight_list(request, pk, username):
 
 def backlog(request):
     if request.user.is_authenticated:
+        unread_messages = Message.objects.filter(recipient=request.user, read=False)
         if request.method == 'POST':
             if request.POST.get('singleResultBtn'):
                 title_input = request.POST.get('titleinput', None)
@@ -214,7 +224,7 @@ def backlog(request):
                     m_backlog = None
 
                 return render(request, 'mypage/backlog.html',
-                              {'movie': movie, 'titleinput': title_input, 'm_backlog': m_backlog})
+                              {'movie': movie, 'titleinput': title_input, 'm_backlog': m_backlog, 'unread': unread_messages})
             elif request.POST.get('multipleResultsBtn'):
                 title_input = request.POST.get('titleinput', None)
                 movies = search_by_title(title_input)
@@ -227,7 +237,7 @@ def backlog(request):
                     m_backlog = None
 
                 return render(request, 'mypage/backlog.html',
-                              {'movies': movies, 'titleinput': title_input, 'm_backlog': m_backlog})
+                              {'movies': movies, 'titleinput': title_input, 'm_backlog': m_backlog, 'unread': unread_messages})
         else:
             # all_albums = Album.objects.all()
             # return render(request, 'mypage/index.html', {'all_albums': all_albums})
@@ -235,9 +245,10 @@ def backlog(request):
                 m_backlog = MovieBacklog.objects.filter(user=request.user)
             except MovieBacklog.DoesNotExist:
                 m_backlog = None
-            return render(request, 'mypage/backlog.html', {'m_backlog': m_backlog})
+            return render(request, 'mypage/backlog.html', {'m_backlog': m_backlog, 'unread': unread_messages})
     else:
         return redirect('mypage:login')
+
 
 def add_backlog(request):
     title = request.POST.get('title', None)
@@ -273,6 +284,7 @@ def add_backlog(request):
     # TODO: Send httprequest back, this one isnt rendering anyway, ajax is in template file...
     return render(request, 'mypage/movienight.html')
     # return redirect(request, '/mycouch/lists/')
+
 
 def add_backlog_multichoice(request):
     title_search = request.POST.get('title', None)

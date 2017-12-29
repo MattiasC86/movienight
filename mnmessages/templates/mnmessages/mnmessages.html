@@ -5,40 +5,167 @@
 
     <div class="container">
         <div class="col-lg-12 mt-4">
-            <h1 style="color:deeppink">Messages</h1>
+            <h1 style="color:white">Messages</h1>
             <hr class="bg-secondary">
         </div>
     </div>
 
     <div class="container">
-        <a href="">Write new message</a>
-        <h5 class="text-light">Messages</h5>
+        <button class="btn btn-info btn-sm" id="newMsgBtn" data-toggle="modal" data-target="#newEventModal">New message</button>
+        <br><br><h5 class="text-light">Messages</h5>
         {% for m in all_messages %}
-            <div class="col-lg-6" id="message{{ m.pk }}">
-                <a href="#" class="link" id="{{ m.pk }}">Title: {{ m.title }}, Sender: {{ m.sender.username }}, {{ m.date }}</a>
-                <div class="content bg-white text-dark" id="content{{ m.pk }}" style="display:none">
-                    <p>{{ m.message }}</p>
-                    <button>Respond</button>
+            <div class="col-lg-6">
+                <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
+                    {{ m.title }} <span class="text-muted"> - </span><span style="color:limegreen"> {{ m.sender.username }} </span>
+                    <span class="text-muted"> - {{ m.date }}</span></a>
+                <div class="message m-1 ml-3 p-2 bg-white text-dark" id="message{{ m.pk }}" style="display:none">
+                    <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
+                    <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
+                    <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
+                    <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
+                    <hr>
+                    <button class="btn btn-info btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal">Respond</button>
                 </div>
             </div>
         {% endfor %}
     </div>
 
+
+    <!-- Modal -->
+<div class="modal fade" id="newEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Send Message</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" role="form" action="{% url 'messages:send_message' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <label class="control-label col-sm-12 text-muted">Send to user: <button> + </button></label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" id="recipientInput" name="recipient" placeholder="User name...">
+                        </div>
+                        <br><label class="control-label col-sm-12 text-muted">Subject:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="subject" id="subjectInput" placeholder="Subject...">
+                        </div>
+                        <br><label class="control-label col-sm-12 text-muted">Message:</label>
+                        <div class="col-sm-10">
+                            <textarea cols="35" rows="7" name="content" id="contentInput" placeholder="Message content..." style="resize:none;overflow-x: hidden;"></textarea>
+                        </div>
+                        <br>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary">Send message!</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+      </div>
+      <div class="modal-footer">
+
+      </div>
+    </div>
+  </div>
+</div>
+
     <script>
         $(function() {
+            //CSRF
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            var csrftoken = getCookie('csrftoken');
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
 
+            // Currently selected message
+            var messagePk;
+            var sender;
+            var recipient;
+            var title;
+            var content;
 
+            // Clicking a message
             $(".link").click(function() {
-                var messagePk = $(this).attr('id');
+                messagePk = $(this).attr('id');
 
-                var isVisible = $("#content" + messagePk).is(':visible');
+                sender = $("#sender" + messagePk).text();
+                recipient = $("#recipient" + messagePk).text();
+                title = 'RE:' + $("#title" + messagePk).text();
+                content = '\n\n---- ' + sender + ' wrote: ----\n' + $("#content" + messagePk).text();
+
+                $("#recipientInput").val(sender);
+                $("#subjectInput").val(title);
+                $("#contentInput").val(content);
+
+                var selectedElement = $("#message" + messagePk);
+
+                var isVisible = selectedElement.is(':visible');
 
                 if(isVisible) {
-                    $("#content" + messagePk).hide();
+                    selectedElement.hide(200);
                 } else {
-                    $(".content").hide();
-                    $("#content" + messagePk).show();
+                    $(".message").hide();
+                    selectedElement.show(200);
                 }
+
+
+                // Logic for read/unread message
+                var read = $(this).hasClass( "True" );
+                console.log(read);
+                console.log(recipient);
+                console.log('{{ user.get_username }}');
+                if(!read && recipient === '{{ user.get_username }}') {
+                    $(this).removeClass("False");
+                    $(this).addClass("True");
+
+                    $.ajaxSetup({
+                        beforeSend: function(xhr, settings) {
+                            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                            }
+                        }
+                    });
+                    $.ajax({
+                        url : "{% url 'messages:read_message' %}",
+                        type : "POST",
+                        data : { messageToUpdate: messagePk}
+                    }).done(function(returned_data){
+                        $(this).removeClass( "text-light" );
+                        $(this).addClass( "text-info" );
+                    });
+                }
+
+            });
+
+
+            // Creating new message
+            $("#newMsgBtn").click(function() {
+                $(".message").hide();
+                $("#recipientInput").val('');
+                $("#subjectInput").val('');
+                $("#contentInput").val('');
             });
         });
     </script>
