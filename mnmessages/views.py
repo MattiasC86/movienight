@@ -8,7 +8,7 @@ from .models import Message
 
 def messages(request):
     unread_messages = Message.objects.filter(recipient=request.user, read=False)
-    all_messages = Message.objects.filter(sender=request.user) | Message.objects.filter(recipient=request.user)
+    all_messages = Message.objects.filter(sender=request.user).order_by('-date') | Message.objects.filter(recipient=request.user).order_by('-date')
     sent_messages = Message.objects.filter(sender=request.user)
     received_messages = Message.objects.filter(recipient=request.user)
     return render(request, 'mnmessages/mnmessages.html', {'all_messages': all_messages, 'unread': unread_messages,
