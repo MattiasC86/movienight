@@ -62,7 +62,7 @@
                                 <br><span class="text-muted">Plot:</span>
                                 <p class="text-white">{{ movie.Plot }}</p>
                                 <br>
-                                <button class="btn btn-success addBacklogBtn" id="{{ movie.Title }}">+ Add to backlog</button>
+                                <button class="btn btn-success addMovieBtn" id="{{ movie.Title }}">+ Add to list</button>
                             </div>
                         </div>
                     </div>
@@ -89,6 +89,7 @@
 
     <script>
 $(function() {
+    console.log("active");
     //CSRF
         function getCookie(name) {
             var cookieValue = null;
@@ -131,8 +132,8 @@ $(function() {
 
         });
     });
-    $("#addBacklogBtn").click(function() {
-        console.log('clicked img to save backlog');
+    $(".addMovieBtn").click(function() {
+        console.log('clicked add to list btn');
         $.ajaxSetup({
             beforeSend: function(xhr, settings) {
                 if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -145,7 +146,8 @@ $(function() {
             type : "POST",
             data : { title: '{{ movie.Title }}', director: '{{ movie.Director }}', year: '{{ movie.Year }}', poster : '{{ movie.Poster }}', plot: '{{ movie.Plot }}' }
         }).done(function(returned_data){
-            window.location.href = '{% url 'mypage:backlog' %}';
+            console.log(returned_data);
+            window.location.href = '{% url 'mypage:movienight_list' movienight.pk request.user.username %}';
 
         });
     });

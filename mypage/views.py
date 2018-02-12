@@ -1,3 +1,4 @@
+import pytz
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -144,14 +145,16 @@ def movienight(request):
             list_size = request.POST.get('nrmovies', None)
             new_movienight = MovieNight(title=title, list_size=list_size, creator=request.user)
             new_movienight.save()
+            new_movienight.users.add(request.user)
             return redirect(reverse('mypage:movienight_event', kwargs={"pk": new_movienight.pk}))
             # return redirect('/movienightevent/' + title + '/', {'movienight': new_movienight})
         else:
             # TODO: change creator to 'users' or somthing to include all
             created_movienights = MovieNight.objects.filter(creator=request.user)
-            participant_movienights = MovieNight.objects.filter(users=request.user)
+            participant_movienights = MovieNight.objects.filter(users=request.user).exclude(creator=request.user)
+            invited_movinights = MovieNight.objects.filter(invited_users=request.user)
             return render(request, 'mypage/movienight.html', {'created_movienights': created_movienights, 'participant_movienights': participant_movienights,
-                                                              'unread': unread_messages})
+                                                              'invited_movinights': invited_movinights, 'unread': unread_messages})
     else:
         return redirect('mypage:login')
 
@@ -161,12 +164,40 @@ def movienight_event(request, pk):
     if request.method == 'POST':
         # event settings
         if request.POST['action'] == 'settings':
+            print(request.POST.get('date'))
+            print(request.POST.get('time'))
+
             selected_movienight.description = request.POST.get('description')
+            selected_movienight.string_date = request.POST.get('date')
+            selected_movienight.string_time = request.POST.get('time')
+            selected_movienight.date = selected_movienight.string_date + "T" + selected_movienight.string_time
+            selected_movienight.location = request.POST.get('location')
             selected_movienight.decoration_url = request.POST.get('decoration')
             selected_movienight.list_size = request.POST.get('nrmovies')
             selected_movienight.save()
             return redirect('/movienightevent/' + pk)
-    return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight})
+        # TODO: Kolla om man verkligen ska köra filter, eller kanske ist get när bara ett av nåt ska hämtas
+        # TODO: Bör skickas från typ "MovieNight" som sender, eller liknande
+        # TODO: Skicka tillbaka meddelande om user är invited redan
+        if request.POST['action'] == 'inviteUser':
+            selected_username = request.POST.get('username')
+            selected_user = User.objects.get(username=selected_username)
+            if selected_user in selected_movienight.invited_users.all():
+                print('User already invited to event!')
+            if selected_user in selected_movienight.users.all():
+                print('User has already accepted an invitation to the event!')
+            else:
+                selected_movienight.invited_users.add(selected_user)
+                selected_movienight.save()
+                new_message = Message(sender=request.user, recipient=selected_user, title="Invitation to MovieNight event!", message="You have been invited to the Movie event " +
+                                  selected_movienight.title + "!\n\nGo to your MovieNight page to see the event. Inside the event you can learn more about it " +
+                                                              "and either accept or reject the invitation.")
+                new_message.save()
+            return redirect('/movienightevent/' + pk)
+    usable_date = selected_movienight.string_date
+    usable_time = selected_movienight.string_time
+    display_date = selected_movienight.string_date + " " + selected_movienight.string_time
+    return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight, "usable_date": usable_date, "usable_time": usable_time, "display_date": display_date})
 
 
 def delete_movienight(request, pk):
@@ -176,8 +207,35 @@ def delete_movienight(request, pk):
 
 
 def movienight_list(request, pk, username):
+    selected_movienight = MovieNight.objects.get(pk=pk)
+    print("Now views.movienight_list")
+
     if request.method == 'POST':
-        print('POST')
+        if request.POST.get('singleResultBtn'):
+            title_input = request.POST.get('titleinput', None)
+            movie = get_by_title(title_input)
+
+            try:
+                movie_list = MovieNightList.objects.get(user=request.user, movienight=selected_movienight)
+            except MovieNightList.DoesNotExist:
+                movie_list = None
+
+            return render(request, 'mypage/movienight_list.html',
+                          {'movienight': selected_movienight, 'movie': movie, 'titleinput': title_input, 'list': movie_list})
+        #elif request.POST.get('multipleResultsBtn'):
+            #title_input = request.POST.get('titleinput', None)
+            #movies = search_by_title(title_input)
+
+            #try:
+               # m_backlog = MovieBacklog.objects.filter(user=request.user)
+          #  except MovieBacklog.DoesNotExist:
+            #    m_backlog = None
+
+           # return render(request, 'mypage/backlog.html',
+              #            {'movies': movies, 'titleinput': title_input, 'm_backlog': m_backlog,
+                  #         'unread': unread_messages})
+
+        print(request.POST)
         moviepk = request.POST.get('movieToDelete', None)
         movielistpk = request.POST.get('movieList', None)
 
@@ -207,6 +265,40 @@ def movienight_list(request, pk, username):
         movie_list = None
 
     return render(request, 'mypage/movienight_list.html', {'movienight': selected_movienight, 'user': selected_user, 'list':movie_list})
+
+
+def movienight_list_add(request, pk, username):
+    selected_movienight = MovieNight.objects.get(pk=pk)
+    title = request.POST.get('title', None)
+    director = request.POST.get('director', None)
+    year = request.POST.get('year', None)
+    poster = request.POST.get('poster', None)
+    plot = request.POST.get('plot', None)
+
+    try:
+        movie_duplicate = Movie.objects.get(title=title, release_year=year)
+    except Movie.DoesNotExist:
+        movie_duplicate = None
+
+    if movie_duplicate:
+        # save duplicate to list
+        print('duplicate found!')
+    else:
+        # save as new movie
+        movie_new = Movie(title=title, director=director, release_year=year, poster=poster, plot=plot)
+        movie_new.save()
+
+    movie_list = MovieNightList.objects.get(user=request.user, movienight=MovieNight.objects.get(pk=pk))
+    if Movie.objects.get(title=title) in movie_list.movies.all():
+        print("Movie already in list!")
+    else:
+        movie_list.movies.add(Movie.objects.get(title=title))
+        movie_list.save()
+        print("saved to list")
+    # TODO: Send httprequest back, this one isnt rendering anyway, ajax is in template file...
+    return render(request, 'mypage/movienight_list.html',
+                  {'movienight': selected_movienight, 'user': request.user, 'list': movie_list})
+
 
 def backlog(request):
     if request.user.is_authenticated:

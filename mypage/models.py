@@ -42,11 +42,16 @@ class MovieNight(models.Model):
     title = models.CharField(max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
     date = models.DateTimeField(default=timezone.now)
+    string_date = models.CharField(max_length=10, default='2000-01-01')
+    string_time = models.CharField(max_length=8, default='00:00')
+    location = models.CharField(max_length=100, default="Home")
     description = models.CharField(max_length=1000, default="This is the description for this MovieNight event, it can be edited by the creator of the event.")
     decoration_url = models.CharField(max_length=1000, default="https://cdn.makeuseof.com/wp-content/uploads/2015/04/movie-theater-revival-setup.jpg")
     list_size = models.IntegerField()
     creator = models.ForeignKey(User)
     users = models.ManyToManyField(User, related_name="participants")
+    invited_users = models.ManyToManyField(User, related_name="invited_users")
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title + ' created by ' + self.creator.username

@@ -17,46 +17,50 @@
             <button class="btn btn-primary btn-sm mt-3" id="outboxBtn"><i class="fas fa-paper-plane" aria-hidden="true"></i> Outbox</button>{% endcomment %}
         </div>
 
-        <div class="col-lg-6 mx-auto" id="inboxDiv mx-auto">
-            <br><h5 class="bg-light text-dark p-1 rounded-top text-center">Inbox</h5>
-            {% for m in all_messages %}
-                {% if m.recipient.username == user.username %}
-                    <div class="col-lg-12">
-                        <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
-                            {{ m.title }} <span class="text-muted"> from </span><span style="color:limegreen"> {{ m.sender.username }} </span>
-                            <span class="text-muted"> - {{ m.date }}</span></a>
-                        <div class="message m-1 ml-3 p-2 bg-light text-dark rounded" id="message{{ m.pk }}" style="display:none">
-                            <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
-                            <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
-                            <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
-                            <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
-                            <hr>
-                            <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
+        <div class="col-lg-6 mx-auto">
+            <br><h5 class="bg-light text-dark p-1 rounded-top text-center" id="inboxBtn">Inbox</h5>
+            <div id="inboxDiv">
+                {% for m in all_messages %}
+                    {% if m.recipient.username == user.username %}
+                        <div class="col-lg-12">
+                            <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
+                                {{ m.title }} <span class="text-muted"> from </span><span style="color:limegreen"> {{ m.sender.username }} </span>
+                                <span class="text-muted"> - {{ m.date }}</span></a>
+                            <div class="message m-1 ml-3 p-2 bg-light text-dark rounded" id="message{{ m.pk }}" style="display:none">
+                                <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
+                                <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
+                                <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
+                                <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
+                                <hr>
+                                <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
 
-        <div class="col-lg-6 mx-auto" id="outboxDiv">
-            <br><br><h5 class="bg-light text-dark p-1 rounded-top text-center">Outbox</h5>
-            {% for m in all_messages %}
-                {% if m.sender.username == user.username %}
-                    <div class="col-lg-12">
-                        <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
-                            {{ m.title }} <span class="text-muted"> to </span><span style="color:limegreen"> {{ m.recipient.username }} </span>
-                            <span class="text-muted"> - {{ m.date }}</span></a>
-                        <div class="message m-1 ml-3 p-2 bg-white text-dark rounded" id="message{{ m.pk }}" style="display:none">
-                            <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
-                            <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
-                            <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
-                            <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
-                            <hr>
-                            <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal">Respond</button>
+        <div class="col-lg-6 mx-auto">
+            <br><br><h5 class="bg-light text-dark p-1 rounded-top text-center" id="outboxBtn">Outbox</h5>
+            <div id="outboxDiv">
+                {% for m in all_messages %}
+                    {% if m.sender.username == user.username %}
+                        <div class="col-lg-12 outboxDiv">
+                            <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
+                                {{ m.title }} <span class="text-muted"> to </span><span style="color:limegreen"> {{ m.recipient.username }} </span>
+                                <span class="text-muted"> - {{ m.date }}</span></a>
+                            <div class="message m-1 ml-3 p-2 bg-white text-dark rounded" id="message{{ m.pk }}" style="display:none">
+                                <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
+                                <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
+                                <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
+                                <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
+                                <hr>
+                                <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
 
     </div>
@@ -118,10 +122,15 @@
 
             //Display outbox
             $("#outboxBtn").click(function() {
-                if($("#outboxDiv").is(':visible'))
+                console.log('clicked outbox')
+                if($("#outboxDiv").is(':visible')) {
+                    console.log('visible');
                     $("#outboxDiv").hide(200);
-                else
-                    $("#outboxDiv").show(200);;
+                }
+                else {
+                    console.log('unvisible');
+                    $("#outboxDiv").show(200);
+                }
             });
 
             //CSRF

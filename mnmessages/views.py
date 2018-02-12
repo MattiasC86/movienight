@@ -14,6 +14,7 @@ def messages(request):
     return render(request, 'mnmessages/mnmessages.html', {'all_messages': all_messages, 'unread': unread_messages,
                                                           'outbox': sent_messages, 'inbox': received_messages})
 
+
 # TODO add error message in html file for wrong username
 def send_message(request):
     if request.method == "POST":
@@ -39,3 +40,7 @@ def read_message(request):
     message_update.save()
     return HttpResponse('Read!')
     #return redirect('messages:messages')
+
+
+def friends_list(request):
+    return render(request, 'mnmessages/friendslist.html')

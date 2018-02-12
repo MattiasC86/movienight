@@ -41,7 +41,7 @@
                 {% if movienight.creator == request.user %}
                 <div class="mb-4">
                     <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#eventSettingsModal">Event settings</button>
-                    <button class="btn btn-outline-success">+ Invite user</button>
+                    <button class="btn btn-outline-success" data-toggle="modal" data-target="#inviteUserModal">+ Invite user</button>
                     <form method="post" action="{{ request.build_absolute_uri }}delete">
                         {% csrf_token %}
                         <button class="btn btn-outline-danger" type="submit">Delete event</button>
@@ -50,7 +50,7 @@
                 {% endif %}
                 <div class="mt-4">
                     <h5 class="bg-secondary">WHEN & WHERE</h5>
-                    <span class="text-light">Jan 14, 2018, 19:00 <span class="text-muted">@</span> Hittepåvägen 17, 400 40</span>
+                    <span class="text-light">{{ display_date }}<span class="text-muted"> @ </span>{{ movienight.location }}</span>
                 </div>
 
                 <div class="mt-4">
@@ -96,17 +96,72 @@
                         <div class="col-sm-12">
                             <textarea cols="35" rows="5" name="description" placeholder="Description..." style="resize:none;overflow-x: hidden;">{{ movienight.description }}</textarea>
                         </div>
-                        <br><label class="control-label col-sm-12 text-muted">Image upload:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="text" name="decoration" placeholder="URL to image..." value="{{ movienight.decoration_url }}">
+                        <label class="control-label col-sm-12 text-muted mt-2">Date & Time</label>
+                        <div class="form-row col-sm-12">
+                            <div class="col-sm-7">
+                                <input class="form-control" type="date" max="2999-12-31" name="date" placeholder="" value="{{ usable_date }}">
+                            </div>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="time" max="23:59:59" name="time" placeholder="" value="{{ usable_time }}">
+                            </div>
                         </div>
-                        <br><label class="control-label col-sm-12 text-muted">Max number of movies users can nominate:</label>
+
+                        <label class="control-label col-sm-12 text-muted mt-2">Location</label>
                         <div class="col-sm-10">
-                            <input class="form-control" type="text" name="nrmovies" placeholder="Enter a number..." value="{{ movienight.list_size }}">
+                            <input class="form-control" type="text" name="location" placeholder="Location or address..." value="{{ movienight.location }}">
+                        </div>
+                        <label class="control-label col-sm-12 text-muted mt-2">Image upload:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="url" name="decoration" placeholder="URL to image..." value="{{ movienight.decoration_url }}">
+                        </div>
+                        <label class="control-label col-sm-12 text-muted mt-2">Max number of movies users can nominate:</label>
+                        <div class="col-sm-10">
+                            <select name="nrmovies" id="">
+                                <option value="1"> 1 </option>
+                                <option value="2"> 2 </option>
+                                <option value="3"> 3 </option>
+                                <option value="4"> 4 </option>
+                                <option value="5"> 5 </option>
+                            </select>
                         </div>
                         <br>
                         <div class="col-sm-10">
                             <button class="btn btn-primary" type="submit" name="action" value="settings">Save settings!</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+      </div>
+      <div class="modal-footer bg-dark">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invite User Modal ---->
+<div class="modal fade" id="inviteUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h5 class="modal-title" id="exampleModalLabel">Invite User</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark">
+        <form class="form-horizontal" role="form" action="inviteuser/" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label class="control-label col-sm-12 text-muted">User to invite:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="username" placeholder="Username..." value="">
+                        </div>
+                        <br>
+                        <div class="col-sm-10">
+                            <button class="btn btn-primary" type="submit" name="action" value="inviteUser">Invite user</button>
                         </div>
                     </div>
                 </div>

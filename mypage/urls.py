@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^mycouch/backlog/$', views.backlog, name='backlog'),
     url(r'^mycouch/backlog/add/$', views.add_backlog, name='add_backlog'),
     url(r'^mycouch/[0-9]+/delete/$', views.delete_backlog, name='delete_backlog'),
+
     # moviesearches, TODO dont use them all!
     url(r'addmultichoice/', views.add_backlog_multichoice),
     url(r'getmovies/', views.get_movies),
@@ -39,11 +40,13 @@ urlpatterns = [
     url(r'^mycouch/movienight/', views.movienight, name='movienight'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/$', views.movienight_event, name='movienight_event'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/settings/$', views.movienight_event, name='movienight_event_settings'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/inviteuser/$', views.movienight_event, name='movienight_event_invite_user'),
     # delete movienight
     url(r'^movienightevent/(?P<pk>[0-9]+)/delete$', views.delete_movienight, name='delete_movienight'),
 
     # movielist
     url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/$', views.movienight_list, name='movienight_list'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/add/$', views.movienight_list_add, name='add_list'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/delete/$', views.delete_backlog, name='delete_backlog'),
 
 
