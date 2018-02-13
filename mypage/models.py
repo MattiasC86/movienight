@@ -38,6 +38,9 @@ class MovieBacklog(models.Model):
         return self.user.username + ' - ' + self.movie.title
 
 
+
+
+
 class MovieNight(models.Model):
     title = models.CharField(max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
@@ -59,9 +62,21 @@ class MovieNight(models.Model):
 
 class MovieNightList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    users_voted = models.ManyToManyField(User, related_name="users_voted", blank=True, null=True)
     movienight = models.ForeignKey(MovieNight, on_delete=models.CASCADE)
     movies = models.ManyToManyField(Movie)
 
     def __str__(self):
         return self.movienight.title + ' - ' + self.user.username
 
+
+class Vote(models.Model):
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    movie_night = models.ForeignKey(MovieNight, on_delete=models.CASCADE)
+    movie_list = models.ForeignKey(MovieNightList, on_delete=models.CASCADE)
+    points = models.IntegerField()
+
+    def __str__(self):
+        return self.user.username + ': ' + self.movie.title + "(" + str(self.points) + " p) - " + self.movie_night.title \
+               + "(" + self.movie_list.user.username + ")"

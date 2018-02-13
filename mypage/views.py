@@ -1,3 +1,5 @@
+import json
+
 import pytz
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
@@ -10,7 +12,7 @@ from django.views.generic import View
 from .forms import UserForm
 
 from .external_http_requests import get_by_title, search_by_title
-from .models import Movie, MovieNight, MovieNightList, MovieBacklog
+from .models import Movie, MovieNight, MovieNightList, MovieBacklog, Vote
 from mnmessages.models import Message
 
 
@@ -161,6 +163,15 @@ def movienight(request):
 
 def movienight_event(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
+    try:
+        movie_lists = MovieNightList.objects.filter(movienight=selected_movienight)
+    except MovieNightList.DoesNotExist:
+        movie_list = None
+
+    for x in movie_lists:
+        if not x.users_voted:
+            x.users_voted = None
+
     if request.method == 'POST':
         # event settings
         if request.POST['action'] == 'settings':
@@ -197,7 +208,9 @@ def movienight_event(request, pk):
     usable_date = selected_movienight.string_date
     usable_time = selected_movienight.string_time
     display_date = selected_movienight.string_date + " " + selected_movienight.string_time
-    return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight, "usable_date": usable_date, "usable_time": usable_time, "display_date": display_date})
+    return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight, "usable_date": usable_date,
+                                                           "usable_time": usable_time, "display_date": display_date,
+                                                           "movie_lists": movie_lists})
 
 
 def delete_movienight(request, pk):
@@ -208,6 +221,7 @@ def delete_movienight(request, pk):
 
 def movienight_list(request, pk, username):
     selected_movienight = MovieNight.objects.get(pk=pk)
+    selected_user = User.objects.get(username=username)
     print("Now views.movienight_list")
 
     if request.method == 'POST':
@@ -257,15 +271,49 @@ def movienight_list(request, pk, username):
         # TODO: Send httprequest back, this one isnt rendering anyway, ajax is in template file...
         return render(request, 'mypage/movienight.html')
 
+
+    try:
+        movie_list = MovieNightList.objects.get(user=selected_user, movienight=selected_movienight)
+    except MovieNightList.DoesNotExist:
+        movie_list = None
+
+    return render(request, 'mypage/movienight_list.html', {'movienight': selected_movienight, 'user': selected_user,
+                                                           'list': movie_list})
+
+
+def movienight_list_vote(request, pk, username):
     selected_movienight = MovieNight.objects.get(pk=pk)
     selected_user = User.objects.get(username=username)
     try:
         movie_list = MovieNightList.objects.get(user=selected_user, movienight=selected_movienight)
     except MovieNightList.DoesNotExist:
         movie_list = None
+    try:
+        previous_vote = Vote.objects.filter(movie_list=movie_list, user=request.user)
+    except Vote.DoesNotExist:
+        previous_vote = None
 
-    return render(request, 'mypage/movienight_list.html', {'movienight': selected_movienight, 'user': selected_user, 'list':movie_list})
+    if request.method == 'POST':
+        # TODO: Om personen redan röstat på denna lista ska det ej gå igenom. movienight är onödigt att ha med, finns sparat i movie_list
+        print("vote submit!")
 
+
+        # TODO: Send msg back to user
+        if previous_vote is not None:
+            print("Already voted!")
+        else:
+            data = json.loads(request.POST.get('votes'))
+
+            for x in data:
+                selected_movie = Movie.objects.get(pk=x['movie_pk'])
+                new_vote = Vote(user=request.user, movie_night=selected_movienight, movie_list=movie_list,
+                                movie=selected_movie, points=x['points'])
+                new_vote.save()
+                print("New vote saved!")
+
+    return render(request, 'mypage/movie_list_voting.html', {'movienight': selected_movienight,
+                                                             'list_user': selected_user, 'list': movie_list,
+                                                             'voted': previous_vote})
 
 def movienight_list_add(request, pk, username):
     selected_movienight = MovieNight.objects.get(pk=pk)
@@ -275,27 +323,42 @@ def movienight_list_add(request, pk, username):
     poster = request.POST.get('poster', None)
     plot = request.POST.get('plot', None)
 
+    print("title:" + title)
+
+    # If movie is not in database, save it
     try:
         movie_duplicate = Movie.objects.get(title=title, release_year=year)
     except Movie.DoesNotExist:
         movie_duplicate = None
 
-    if movie_duplicate:
-        # save duplicate to list
-        print('duplicate found!')
-    else:
+    if not movie_duplicate:
         # save as new movie
         movie_new = Movie(title=title, director=director, release_year=year, poster=poster, plot=plot)
         movie_new.save()
 
-    movie_list = MovieNightList.objects.get(user=request.user, movienight=MovieNight.objects.get(pk=pk))
-    if Movie.objects.get(title=title) in movie_list.movies.all():
-        print("Movie already in list!")
+    # Check if user already has a movielist
+    try:
+        movie_list = MovieNightList.objects.get(user=request.user, movienight=selected_movienight)
+    except MovieNightList.DoesNotExist:
+        movie_list = None
+
+    new_list_movie = Movie.objects.get(title=title)
+
+    # If movie list does not exist, create one
+    if movie_list:
+        # If movie not in list, add it
+        if new_list_movie in movie_list.movies.all():
+            print("Movie already in list!")
+        else:
+            movie_list.movies.add(new_list_movie)
+            movie_list.save()
     else:
-        movie_list.movies.add(Movie.objects.get(title=title))
+        movie_list = MovieNightList(user=request.user, movienight=selected_movienight)
         movie_list.save()
-        print("saved to list")
-    # TODO: Send httprequest back, this one isnt rendering anyway, ajax is in template file...
+        movie_list.movies.add(new_list_movie)
+
+    # TODO: Should sent json back to not having to reload page
+    #return JsonResponse(new_list_movie, safe=False)
     return render(request, 'mypage/movienight_list.html',
                   {'movienight': selected_movienight, 'user': request.user, 'list': movie_list})
 
@@ -444,12 +507,12 @@ def submit(request):
     return render(request, 'mypage/mycouch.html', {'movie': movie, 'titleinput': title_input})
 
 
-def get_movie(request):
+def get_movie(request, pk, username):
+    print("views.get_movie() running")
     title_input = request.POST.get('title')
     result = get_by_title(title_input)
     print(result)
-    movie = [result]
-    return render(request, 'mypage/index.html', {'movie': movie, 'titleinput': title_input})
+    return JsonResponse(result)
 
 
 def get_movies(request):

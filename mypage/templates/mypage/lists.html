@@ -5,9 +5,112 @@
 {% block body %}
 
     <div class="container ml-0 mt-3 p-4">
-    <div class="col-lg-10 mb-5">
-        <h class="display-4" style="color:orange">List manager</h>
-        <hr class="bg-secondary">
+        <div class="col-lg-10 mb-5">
+            <h class="display-4" style="color:orange">List manager</h>
+            <hr class="bg-secondary">
+            <button class="btn btn-warning">+New List</button>
+        </div>
+        <div class="searchDiv col-lg-5">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search movie title..." id="titleinput" name="titleinput" value="{{ titleinput }}">
+                <span class="input-group-btn">
+                    <button class="btn btn-secondary" type="button" id="searchMovieBtn" name="singleResultBtn" value="1">Go!</button>
+                </span>
+            </div>
+            {% if movie %}
+            <button class="btn btn-dark" type="submit" name="multipleResultsBtn" value="1">Show more results...</button>
+            {% endif %}
+            <br>
+        </div>
+
+
+        <!-- Movie search result -->
+                <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="movieSearchResult">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                            <img class="img-fluid" id="resultPoster" src="" alt="">
+                        </div>
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+                            <h1 style="color:deepskyblue" id="resultTitle"></h1>
+                            <span class="text-muted">Release year: </span><span class="text-white" id="resultYear"></span>
+                            <br><span class="text-muted">Director: </span><span class="text-white" id="resultDirector"></span>
+                            <br><span class="text-muted">Plot:</span>
+                            <p class="text-white" id="resultPlot"></p>
+                            <br>
+                            <button class="btn btn-success addMovieBtn" id="resultTitle">+ Add to list</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Movie click info -->
+                <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="movieInfo">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                        <img class="img-fluid" src="{{ movie.Poster }}" alt="" id="infoPoster">
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+                        <h1 style="color:deepskyblue" id="infoTitle">{{ movie.Title }}</h1>
+                        <span class="text-muted">Release year: </span><span class="text-white" id="infoYear">{{ movie.Year }}</span>
+                        <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
+                        <br><span class="text-muted">Plot:</span>
+                        <p class="text-white" id="infoPlot"></p>
+                    </div>
+                </div>
+                </div>
     </div>
-    </div>
+
+
+
+    <script>
+    $(function() {
+        //CRF
+       function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+
+        $("#searchMovieBtn").click(function() {
+            $("#movieInfo").hide();
+            $("#movieSearchResult").show();
+            console.log('searchMovieBtn');
+            var titleInput = $("#titleinput").val();
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $.ajax({
+                url : './get_movie/',
+                type : "POST",
+                data : { title: titleInput }
+            }).done(function(returned_data){
+                console.log(returned_data);
+                $("#resultTitle").text(returned_data.Title);
+                $("#resultDirector").text(returned_data.Director);
+                $("#resultPoster").attr("src", returned_data.Poster);
+                $("#resultYear").text(returned_data.Year);
+                $("#resultPlot").text(returned_data.Plot);
+            });
+        });
+    });
+
+    </script>
 {% endblock %}

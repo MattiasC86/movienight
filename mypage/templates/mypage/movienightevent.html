@@ -65,11 +65,18 @@
                 <div class="mt-4 mb-4">
                     <h5 style="background:orange">SUBMITTED MOVIE LISTS</h5>
                     <p style="color:orange">Max number of movies to nominate per user: {{ movienight.list_size }}</p>
-                    <a href="{{ request.user.username }}/" class="text-white">Edit your movie list!</a>
+                    <a href="{{ request.user.username }}/" class="text-white">Edit your movie list</a>
                 </div>
                 {% for u in movienight.users.all %}
                     <div>
-                        <a href="{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a>
+                        <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a>
+                        {% for l in movie_lists %}
+                            {% if u.username == l.user.username %}
+                                {% if l.users_voted.all %}
+                                    <span class="text-muted">(Have voted: {% for uv in l.users_voted.all %} {{ uv.username }}{% endfor %})</span>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endfor %}
             </div>

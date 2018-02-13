@@ -1,0 +1,233 @@
+{% extends 'mypage/base.html' %}
+{% block title %} {{ movienight.title }} Movie List by {{ user.username }}{% endblock %}
+
+{% block body %}
+    <style>
+  #sortable { list-style-type: none; margin: 0; padding: 0; }
+  #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; }
+  #sortable li span { position: absolute; }
+  </style>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#sortable" ).sortable();
+    $( "#sortable" ).disableSelection();
+  } );
+
+  </script>
+
+    <div class="container">
+        <div class="col-lg-12 mt-4">
+            <h1 style="color:deepskyblue">{{ movienight.title }} Movie List</h1>
+            <p class="text-muted">By <a href="/user/{{ list_user.username }}" style="color:limegreen">{{ list_user.username }}</a> for the event <a href="/movienightevent/{{ movienight.pk }}" style="color:deepskyblue">{{ movienight.title }}</a></p>
+            {% if voted %}
+                <p class="text-light">Your votes:</p>
+                {% for v in voted %}
+                    <p class="text-light">{{ v.points }} points: {{ v.movie.title }}</p>
+                {% endfor %}
+            {% else %}
+
+
+            <p class="text-muted">Drag and drop the movies to change order. Top of list is good, bottom bad. Click on a movie to show more info about it.</p>
+            <p class="text-muted">I have put them in the order I want: <span><button class="btn btn-sm btn-success" id="saveVote" data-toggle="modal" data-target="#confirmVoteModal">Lock in your vote</button></span></p>
+            <hr class="bg-secondary">
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row ml-1">
+            <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5">
+                {% if list %}
+                    <ul class="text-light" id="sortable">
+                {% for m in list.movies.all %}
+
+                        <li class="mt-4 mb-4 movieItem bg-dark border border-info" id="{{ m.pk }}">{{ m.title }}</li>
+
+                {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="lead text-muted">{{ list_user.username }} haven't added any movies yet.</p>
+                {% endif %}
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7" id="movieInfo">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                    <img class="img-fluid" src="{{ movie.Poster }}" alt="" id="infoPoster">
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+                    <h1 style="color:deepskyblue" id="infoTitle">{{ movie.Title }}</h1>
+                    <span class="text-muted">Release year: </span><span class="text-white" id="infoYear">{{ movie.Year }}</span>
+                    <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
+                    <br><span class="text-muted">Plot:</span>
+                    <p class="text-white" id="infoPlot"></p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Confirm vote modal -->
+    <div class="modal fade" id="confirmVoteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h5 class="modal-title" id="exampleModalLabel">Confirm vote</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark">
+        <form class="form-horizontal" role="form" action="." method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <br><label class="control-label col-sm-12 text-muted">POINTS GIVEN:</label>
+                        <div class="col-sm-12">
+                            <ul id="votesUl">
+
+                            </ul>
+                        </div>
+                        <br>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-primary" id="confirmVote" data-dismiss="modal">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+      </div>
+      <div class="modal-footer bg-dark">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+    {% endif %}
+
+
+    <script>
+        $(function() {
+           $("#movieInfo").hide();
+        });
+
+        // CRF TOKEN
+        var csrftoken = getCookie('csrftoken');
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $("#saveVote").click(function() {
+            $("#confirmVoteModal")
+            var liElements = $("ul#sortable li:not(:empty)");
+            var finalVotedList = [];
+            var votes = [];
+            var pointsMax = {{ movienight.list_size }};
+
+            for(var i = 0; i < liElements.size(); i++) {
+                finalVotedList.push(liElements.get(i).id);
+            }
+
+            for(var i = 0; i < pointsMax; i++) {
+                votes.push({"movie_pk":finalVotedList[i], "points":pointsMax-i})
+                {% for m in list.movies.all %}
+                    if(finalVotedList[i] == {{ m.pk }}) {
+                        votes[i].movie_title = '{{ m.title }}';
+                    }
+                {% endfor %}
+            }
+            console.log(votes);
+
+            $("#votesUl").empty();
+            for(var i = 0; i < pointsMax; i++) {
+                $("#votesUl").append("<p class='text-white'>" + votes[i].points + " points: " +  votes[i].movie_title + "</p>");
+            }
+        });
+
+        $("#confirmVote").click(function() {
+            $("#confirmVoteModal")
+            var liElements = $("ul#sortable li:not(:empty)");
+            var finalVotedList = [];
+            var votes = [];
+            var pointsMax = {{ movienight.list_size }};
+
+            for(var i = 0; i < liElements.size(); i++) {
+                finalVotedList.push(liElements.get(i).id);
+            }
+
+            for(var i = 0; i < pointsMax; i++) {
+                votes.push({"movie_pk":finalVotedList[i], "points":pointsMax-i, "voter_user_pk": '{{ request.user.pk }}', "voted_user_pk": '{{ list_user.pk }}' })
+                {% for m in list.movies.all %}
+                    if(finalVotedList[i] == {{ m.pk }}) {
+                        votes[i].movie_title = '{{ m.title }}';
+                    }
+                {% endfor %}
+            }
+
+            $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+            });
+
+            var s = JSON.stringify(votes);
+            $.ajax({
+                url : 'savevote/',
+                type : "POST",
+                data : { 'votes': s }
+            }).done(function(returned_data){
+                {% comment %}window.location.href = '{% url 'mypage:backlog' %}';{% endcomment %}
+
+            });
+        });
+
+        $(".movieItem").click(function() {
+            console.log("clicked");
+            var title;
+            var year;
+            var director;
+            var plot;
+            var poster;
+
+            {% for m in list.movies.all %}
+                if(this.id == {{ m.pk }}) {
+                    console.log('hej' + '{{ m.title }}');
+                    title = '{{ m.title }}';
+                    year = '{{ m.release_year }}';
+                    director = '{{ m.director }}';
+                    plot = '{{ m.plot }}';
+                    poster = '{{ m.poster }}';
+                }
+            {% endfor %}
+
+            $("#infoTitle").text(title);
+            $("#infoYear").text(year);
+            $("#infoDirector").text(director);
+            $("#infoPlot").text(plot);
+            $("#infoPoster").attr("src", poster);
+
+
+            $("#movieInfo").show();
+        });
+    </script>
+
+{% endblock %}
+
