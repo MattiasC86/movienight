@@ -163,7 +163,8 @@
             var content;
 
             // Clicking a message
-            $(".link").click(function() {
+            $(".link").click(function(e) {
+                e.preventDefault();
                 messagePk = $(this).attr('id');
 
                 sender = $("#sender" + messagePk).text();
@@ -212,7 +213,6 @@
                         $(this).addClass( "text-info" );
                     });
                 }
-
             });
 
 

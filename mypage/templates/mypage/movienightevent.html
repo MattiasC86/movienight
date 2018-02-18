@@ -21,7 +21,7 @@
                 </div>
                 <div class="mt-5  mb-5 mx-auto">
                     <h5 class="bg-dark text-light mb-0 p-1 border border-light">CHAT</h5>
-                    <div class="bg-light mb-1" style="max-height:150px;overflow:scroll">
+                    <div class="bg-light mb-1" style="max-height:150px;overflow:scroll" id="chatWindow">
                         <p>User1: Hallå</p>
                         <p>User2: Hej där!</p>
                         <p>User3: Trevligt...</p>
@@ -29,14 +29,52 @@
                         <p>User3: Ja det tycker jag.</p>
                     </div>
                     <div class="input-group">
-                        <input class="form-control col-lg-5" type="text" placeholder="Write your message...">
+                        <input class="form-control col-lg-5" type="text" id="chatMessage" placeholder="Write your message...">
                         <span class="input-group-btn">
-                            <button class="btn btn-secondary" type="button" id="searchBtn" name="singleResultBtn" value="1">Send</button>
+                            <button class="btn btn-secondary" type="button" id="sendMessageBtn">Send</button>
                         </span>
                     </div>
 
                 </div>
+
+
+
+
             </div>
+
+            {% comment %}<div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 ml-auto">
+                <div class="row">
+                {% for movie in movies %}
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 mt-3">
+                        <h6 style="color:deepskyblue">{{ movie.Title }} <span class="text-muted">({{ movie.Year }})</span></h6>
+                        <img class="img-fluid" src="{{ movie.Poster }}" alt="">
+                    <button class="btn btn-success addBacklogMultiChoiceBtn" id="{{ movie.Title }}">+ Add to backlog</button>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>{% endcomment %}
+
+            {% comment %}<div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="votedMovies">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                        <img class="img-fluid" id="resultPoster" src="" alt="">
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+                        <h1 style="color:deepskyblue" id="resultTitle"></h1>
+                        <span class="text-muted">Release year: </span><span class="text-white" id="resultYear"></span>
+                        <br><span class="text-muted">Director: </span><span class="text-white" id="resultDirector"></span>
+                        <br><span class="text-muted">Plot:</span>
+                        <p class="text-white" id="resultPlot"></p>
+                        <br>
+                        <button class="btn btn-success addMovieBtn" id="resultTitle">+ Add to list</button>
+                    </div>
+                </div>
+            </div>{% endcomment %}
+
+
+
+
+            <!-- RIGHT SIDE -->
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-4">
                 {% if movienight.creator == request.user %}
                 <div class="mb-4">
@@ -46,6 +84,7 @@
                         {% csrf_token %}
                         <button class="btn btn-outline-danger" type="submit">Delete event</button>
                     </form>
+                    <button class="btn btn-outline-success" id ="voteResultsBtn">Calculate results</button>
                 </div>
                 {% endif %}
                 <div class="mt-4">
@@ -64,9 +103,10 @@
                 {% endfor %}
                 <div class="mt-4 mb-4">
                     <h5 style="background:orange">SUBMITTED MOVIE LISTS</h5>
-                    <p style="color:orange">Max number of movies to nominate per user: {{ movienight.list_size }}</p>
+                    <p class="text-muted">Max number of movies to nominate per user: <span style="color:orange"> {{ movienight.list_size }}</span></p>
                     <a href="{{ request.user.username }}/" class="text-white">Edit your movie list</a>
                 </div>
+                <span style="color:orange">VOTE:</span>
                 {% for u in movienight.users.all %}
                     <div>
                         <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a>
@@ -81,6 +121,10 @@
                 {% endfor %}
             </div>
         </div>
+    </div>
+    <div class="container" id="votedMovies">
+        <h2 class="text-info text-center">Voting Results</h2>
+        <hr class="bg-light">
     </div>
 
 
@@ -181,5 +225,112 @@
     </div>
   </div>
 </div>
+
+    <script>
+        $(function() {
+            $("#votedMovies").hide();
+             $('[data-toggle="tooltip"]').tooltip();
+
+            //CSRF
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            var csrftoken = getCookie('csrftoken');
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+
+            $("#sendMessageBtn").click(function() {
+                var text = $("#chatMessage").val();
+                console.log(text);
+                $("#chatWindow").append('<p><b> {{ user.username }} </b>( <i>{% now "D M Y H:i" %}</i> ) : ' + text + '</p>')
+                $('#chatWindow').stop().animate({
+                    scrollTop: $('#chatWindow')[0].scrollHeight
+                }, 800);
+                $("#chatMessage").val("");
+            });
+
+
+            // Calculate votes, show results
+            $("#voteResultsBtn").click(function() {
+            console.log('voteResultsBtn');
+            {% comment %}$.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });{% endcomment %}
+            $.ajax({
+                url : './get_vote_results/',
+                type : "GET"
+            }).done(function(returned_data){
+
+                var votes = returned_data;
+
+                console.log(votes[0].movie.poster);
+
+                function getMovieDiv (index, color, colSize, hSize, icon) {
+
+                    return '<div class="col-lg-' + colSize + ' p-0 mb-4">' +
+                                '<div>' +
+                                    '<div class="col-lg-12 text-center">' +
+                                        '<h' + hSize + ' class="text-light mb-0 pt-1 pb-1">' + icon + votes[index].points + ' points</h' + hSize + '>' +
+                                        '<p class="text-light mb-0 pt-1 pb-1">' + votes[index].movie.title + ' (' + votes[index].movie.year + ')</p>' +
+                                    '</div>' +
+                                    '<div class="col-lg-12 text-center">' +
+                                        '<img class="img-fluid text-light text-center" id="resultPoster" data-toggle="tooltip" title="Teee" src="' + votes[index].movie.poster + '" alt="Missing movie poster">' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+                }
+
+                //TODO: SORT BY POINTS
+                for(var i = 0; i < returned_data.length; i++) {
+                    if(i == 0) {
+                        $("#votedMovies").append(
+                            '<div class="row" id="movieRow">' +
+                            getMovieDiv(i, "goldenrod", 4, 3, '<i class="fas fa-trophy" aria-hidden="true" style="color:gold"></i> ')
+                            + '</div>'
+                        );
+                    } else if(i == 1) {
+                        $("#movieRow").append(
+                            getMovieDiv(i, "silver", 4, 3, '<i class="fas fa-trophy" aria-hidden="true" style="color:silver"></i> ')
+                        );
+                    } else if(i == 2) {
+                        $("#movieRow").append(
+                            getMovieDiv(i, "maroon", 4, 3, '<i class="fas fa-trophy" aria-hidden="true" style="color:maroon"></i> ')
+                        );
+                    } else {
+                        $("#movieRow").append(
+                            getMovieDiv(i, "grey", 2, 5, "")
+                        );
+                    }
+                }
+                $("#votedMovies").show();
+                    setTimeout(function(){
+                        var votedMoviesY = $("#votedMovies").offset().top;
+                        window.scrollTo(0, votedMoviesY);
+                    }, 70);
+            });
+        });
+
+        });
+
+
+    </script>
 
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'mypage/base.html' %}
-{% block title %} {{ movienight.title }} Movie List by {{ user.username }}{% endblock %}
+{% block title %} {{ movienight.title }} - Your Movie List {% endblock %}
 
 {% block body %}
     <style>
@@ -18,9 +18,9 @@
 
     <div class="container">
         <div class="col-lg-12 mt-4">
-            <h1 style="color:deepskyblue">{{ movienight.title }} Movie List</h1>
+            <h1 style="color:deepskyblue">Your Movie List</h1>
             <p class="text-muted">By <a href="/user/{{ user.username }}" style="color:limegreen">{{ user.username }}</a> for the event <a href="/movienightevent/{{ movienight.pk }}" style="color:deepskyblue">{{ movienight.title }}</a></p>
-            <p class="text-muted">Maximum number of movies to nominate for this event: <span style="color:orange">{{ movienight.list_size }}</span></p>
+            <p class="text-muted">Add a maximum of <span style="color:orange">{{ movienight.list_size }}</span> movies to your list. Once someone has voted on your list, you will no longer be able to edit it.</p>
             <hr class="bg-secondary">
         </div>
     </div>
@@ -138,33 +138,33 @@ $(function() {
     $(".movieItem").click(function() {
         $("#movieSearchResult").hide();
         $("#movieInfo").show();
-            console.log("clicked");
-            var title;
-            var year;
-            var director;
-            var plot;
-            var poster;
+        console.log("clicked");
+        var title;
+        var year;
+        var director;
+        var plot;
+        var poster;
 
-            {% for m in list.movies.all %}
-                if(this.id == {{ m.pk }}) {
-                    console.log('hej' + '{{ m.title }}');
-                    title = '{{ m.title }}';
-                    year = '{{ m.release_year }}';
-                    director = '{{ m.director }}';
-                    plot = '{{ m.plot }}';
-                    poster = '{{ m.poster }}';
-                }
-            {% endfor %}
+        {% for m in list.movies.all %}
+            if(this.id == {{ m.pk }}) {
+                console.log('hej' + '{{ m.title }}');
+                title = '{{ m.title }}';
+                year = '{{ m.release_year }}';
+                director = '{{ m.director }}';
+                plot = '{{ m.plot }}';
+                poster = '{{ m.poster }}';
+            }
+        {% endfor %}
 
-            $("#infoTitle").text(title);
-            $("#infoYear").text(year);
-            $("#infoDirector").text(director);
-            $("#infoPlot").text(plot);
-            $("#infoPoster").attr("src", poster);
+        $("#infoTitle").text(title);
+        $("#infoYear").text(year);
+        $("#infoDirector").text(director);
+        $("#infoPlot").text(plot);
+        $("#infoPoster").attr("src", poster);
 
 
-            $("#movieInfo").show();
-        });
+        $("#movieInfo").show();
+    });
 
     {% if list %}
 

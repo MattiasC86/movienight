@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^movienightevent/(?P<pk>[0-9]+)/$', views.movienight_event, name='movienight_event'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/settings/$', views.movienight_event, name='movienight_event_settings'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/inviteuser/$', views.movienight_event, name='movienight_event_invite_user'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/get_vote_results/$', views.movienight_event_get_vote_results, name='movienight_event_get_vote_results'),
     # delete movienight
     url(r'^movienightevent/(?P<pk>[0-9]+)/delete$', views.delete_movienight, name='delete_movienight'),
 

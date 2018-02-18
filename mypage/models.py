@@ -53,7 +53,7 @@ class MovieNight(models.Model):
     list_size = models.IntegerField()
     creator = models.ForeignKey(User)
     users = models.ManyToManyField(User, related_name="participants")
-    invited_users = models.ManyToManyField(User, related_name="invited_users")
+    invited_users = models.ManyToManyField(User, related_name="invited_users", blank=True, null=True)
     active = models.BooleanField(default=True)
 
     def __str__(self):

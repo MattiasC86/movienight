@@ -2,6 +2,7 @@ import json
 
 import pytz
 from django.contrib.auth.models import User
+from django.core import serializers
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
@@ -212,6 +213,42 @@ def movienight_event(request, pk):
                                                            "usable_time": usable_time, "display_date": display_date,
                                                            "movie_lists": movie_lists})
 
+def movienight_event_get_vote_results(request, pk):
+    selected_movienight = MovieNight.objects.get(pk=pk)
+    all_votes = Vote.objects.filter(movie_night=selected_movienight)
+
+    all_votes_new = list(all_votes.all())
+
+    sorted_movies = []
+    sorted_points = []
+    final_results = []
+
+    for x in all_votes_new:
+        if x.movie.pk not in sorted_movies:
+            sorted_movies.append(x.movie.pk)
+
+    x_counter = 0
+    for x in sorted_movies:
+        sorted_points.append(0)
+        for y in all_votes_new:
+            if y.movie.pk == x:
+                sorted_points[x_counter] += y.points
+        x_counter += 1
+
+    i = 0
+    for x in sorted_movies:
+        movie = Movie.objects.get(pk=sorted_movies[i])
+        new_movie = {'pk': movie.pk, 'title': movie.title,'year': movie.release_year, 'director': movie.director,
+                     'plot': movie.plot, 'poster':movie.poster}
+        final_results.append({'movie': new_movie, 'points': sorted_points[i]})
+        i += 1
+
+    final_results.sort(key=lambda x: x['points'], reverse=True)
+
+    return JsonResponse(final_results, safe=False)
+
+
+
 
 def delete_movienight(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
@@ -293,13 +330,15 @@ def movienight_list_vote(request, pk, username):
     except Vote.DoesNotExist:
         previous_vote = None
 
+    print(previous_vote)
+
     if request.method == 'POST':
         # TODO: Om personen redan röstat på denna lista ska det ej gå igenom. movienight är onödigt att ha med, finns sparat i movie_list
         print("vote submit!")
 
 
         # TODO: Send msg back to user
-        if previous_vote is not None:
+        if previous_vote:
             print("Already voted!")
         else:
             data = json.loads(request.POST.get('votes'))
@@ -310,6 +349,8 @@ def movienight_list_vote(request, pk, username):
                                 movie=selected_movie, points=x['points'])
                 new_vote.save()
                 print("New vote saved!")
+            movie_list.users_voted.add(request.user)
+            movie_list.save()
 
     return render(request, 'mypage/movie_list_voting.html', {'movienight': selected_movienight,
                                                              'list_user': selected_user, 'list': movie_list,
