@@ -20,27 +20,44 @@
                 <button class="btn btn-dark btn-lg mb-4" data-toggle="modal" data-target="#newEventModal">Create new Event!</button>
                 <h5 style="background:deepskyblue">ACTIVE EVENTS</h5>
                 {% if created_movienights %}
-                    <p style="color:deepskyblue">CREATOR:</p>
+                    <p class="mb-1 mt-3" style="color:deepskyblue">CREATOR:</p>
                     {% for c_movienight in created_movienights %}
-                        <p class="text-muted">{{ c_movienight.creation_date }} -> <a href="/movienightevent/{{ c_movienight.pk }}" style="color:deepskyblue"> {{ c_movienight.title }}</a></p>
+                        {% if c_movienight.active %}
+                        <p class="text-muted mt-1 mb-1 ml-3">{{ c_movienight.creation_date }} -> <a href="/movienightevent/{{ c_movienight.pk }}" style="color:deepskyblue"> {{ c_movienight.title }}</a></p>
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
                 {% if participant_movienights %}
-                    <p style="color:deepskyblue">PARTICIPANT:</p>
+                    <p class="mb-1 mt-3" style="color:deepskyblue">PARTICIPANT:</p>
                     {% for p_movienight in participant_movienights %}
-                        <p class="text-muted">{{ p_movienight.creation_date }} -> <a href="/movienightevent/{{ p_movienight.pk }}" style="color:deepskyblue"> {{ p_movienight.title }}</a>
+                        <p class="text-muted mt-1 mb-1 ml-3">{{ p_movienight.creation_date }} -> <a href="/movienightevent/{{ p_movienight.pk }}" style="color:deepskyblue"> {{ p_movienight.title }}</a>
                         created by <a href="/user/{{ p_movienight.creator.username }}" style="color:limegreen">{{ p_movienight.creator.username }}</a></p>
                     {% endfor %}
                 {% endif %}
                 {% if invited_movinights %}
                     <p style="color:deepskyblue">NOT YET ACCEPTED INVITATIONS:</p>
                     {% for i_movienight in invited_movinights %}
-                        <p class="text-muted">{{ i_movienight.creation_date }} -> <a href="/movienightevent/{{ i_movienight.pk }}" style="color:deepskyblue"> {{ i_movienight.title }}</a>
+                        <p class="text-muted mt-1 mb-1 ml-3">{{ i_movienight.creation_date }} -> <a href="/movienightevent/{{ i_movienight.pk }}" style="color:deepskyblue"> {{ i_movienight.title }}</a>
                         created by <a href="/user/{{ i_movienight.creator.username }}" style="color:limegreen">{{ i_movienight.creator.username }}</a></p>
                     {% endfor %}
                 {% endif %}
 
-                <h5 style="background:deepskyblue">PAST EVENTS</h5>
+                <h5 class="mt-4" style="background:deepskyblue">PAST EVENTS</h5>
+                {% if created_movienights %}
+                    {% for c_movienight in created_movienights %}
+                        {% if not c_movienight.active %}
+                            <p class="text-muted mt-1 mb-1 ml-3">{{ c_movienight.creation_date }} -> <a href="/movienightevent/{{ c_movienight.pk }}" style="color:deepskyblue"> {{ c_movienight.title }}</a> (Creator)</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                {% if participant_movienights %}
+                    {% for p_movienight in participant_movienights %}
+                        {% if not p_movienight.active %}
+                            <p class="text-muted mt-1 mb-1 ml-3">{{ p_movienight.creation_date }} -> <a href="/movienightevent/{{ p_movienight.pk }}" style="color:deepskyblue"> {{ p_movienight.title }}</a>
+                        created by <a href="/user/{{ p_movienight.creator.username }}" style="color:limegreen">{{ p_movienight.creator.username }}</a></p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -92,6 +109,23 @@
 </div>
 
 
+    <script>
+        {% for mn in created_movienights.all %}
+            if(new Date() > new Date('{{ mn.date.timestamp }}' * 1000)) {
+                console.log('{{ mn.title }}' + " is old");
+                loadCRF();
+                $.ajax({
+                    url : '.',
+                    type: "POST",
+                    data: { 'movienight_pk' : {{ mn.pk }}, 'action': 'make_inactive' }
+                }).done(function(timeNow){
+                    //console.log(returned_data);
+                });
+            } else {
+                console.log('{{ mn.title }}' + " is still active");
+            }
+        {% endfor %}
 
+    </script>
 
 {% endblock %}

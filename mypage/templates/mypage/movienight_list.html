@@ -30,24 +30,33 @@
             <div class="row ml-1">
 
                 <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                    {% if list and not list.editable %}
+                        <p class="text-muted">You can't edit this list since it has been voted on.</p>
+                    {% else %}
+                        <p class="text-muted">You can edit!</p>
 
-                    <div class="searchDiv">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search movie title..." id="titleinput" name="titleinput" value="{{ titleinput }}">
-                            <span class="input-group-btn">
-                                <button class="btn btn-secondary" type="button" id="searchMovieBtn" name="singleResultBtn" value="1">Go!</button>
-                            </span>
+                        <div class="searchDiv">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search movie title..." id="titleinput" name="titleinput" value="{{ titleinput }}">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-secondary" type="button" id="searchMovieBtn" name="singleResultBtn" value="1">Go!</button>
+                                </span>
+                            </div>
+                            {% if movie %}
+                            <button class="btn btn-dark" type="submit" name="multipleResultsBtn" value="1">Show more results...</button>
+                            {% endif %}
+                            <br>
                         </div>
-                        {% if movie %}
-                        <button class="btn btn-dark" type="submit" name="multipleResultsBtn" value="1">Show more results...</button>
-                        {% endif %}
-                        <br>
-                    </div>
+                    {% endif %}
+
+
 
                     {% if list %}
                         <ul class="text-light" id="sortable">
                         {% for m in list.movies.all %}
-                            <li class="mt-4 mb-4 movieItem bg-dark border border-info" id="{{ m.pk }}">{{ m.title }}</li>
+                            <li class="mt-4 mb-4 movieItem bg-dark border border-info" id="{{ m.pk }}">
+                                <div class="text-left">{{ m.title }}</div>
+                            </li>
                         {% endfor %}
                         </ul>
                     {% else %}
@@ -69,6 +78,9 @@
                             <p class="text-white" id="resultPlot"></p>
                             <br>
                             <button class="btn btn-success addMovieBtn" id="resultTitle">+ Add to list</button>
+                            <div class="alert alert-danger mt-3" id="alertMaxMovies">
+                                <strong>Can't add movie!</strong> You have added the maximum number of movies for this event ({{ movienight.list_size }}).
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -84,6 +96,7 @@
                         <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
                         <br><span class="text-muted">Plot:</span>
                         <p class="text-white" id="infoPlot"></p>
+                        <div class="text-left"><button type="button" class="btn btn-sm btn-danger removeMovieBtn" id="{{ m.pk }}"> Remove from list </button></div>
                     </div>
                 </div>
                 </div>
@@ -110,30 +123,10 @@
 
     <script>
 $(function() {
+    loadCRF();
     $("#movieSearchResult").hide();
     $("#movieInfo").hide();
-
-    //CSRF
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        var csrftoken = getCookie('csrftoken');
-        function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
+    $("#alertMaxMovies").hide();
 
     $(".movieItem").click(function() {
         $("#movieSearchResult").hide();
@@ -144,6 +137,7 @@ $(function() {
         var director;
         var plot;
         var poster;
+        var pk;
 
         {% for m in list.movies.all %}
             if(this.id == {{ m.pk }}) {
@@ -153,6 +147,7 @@ $(function() {
                 director = '{{ m.director }}';
                 plot = '{{ m.plot }}';
                 poster = '{{ m.poster }}';
+                pk = '{{ m.pk }}'
             }
         {% endfor %}
 
@@ -161,6 +156,7 @@ $(function() {
         $("#infoDirector").text(director);
         $("#infoPlot").text(plot);
         $("#infoPoster").attr("src", poster);
+        $(".removeMovieBtn").attr("id", pk);
 
 
         $("#movieInfo").show();
@@ -168,39 +164,31 @@ $(function() {
 
     {% if list %}
 
-    $("#remove").click(function() {
-        var movieToDelete =  $(this).attr('action');
+    $(".removeMovieBtn").click(function() {
+        console.log("pressed removeMovieBtn")
+        var movieToDelete =  $(this).attr('id');
         console.log('clicked to remove movie with movie.pk ' + movieToDelete);
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
         $.ajax({
-            url : 'delete/',
+            url : '.',
             type : "POST",
-            data : { movieToDelete: movieToDelete, movieList: {{ list.pk }} }
+            data : { movieToDelete: movieToDelete, movieList: {{ list.pk }}, action: 'remove_from_list' }
         }).done(function(returned_data){
             window.location.href = '/movienightevent/{{ movienight.pk }}/{{ user }}';
-
         });
     });
     {% endif %}
 
+    $("#titleinput").keyup(function(e) {
+        e.preventDefault();
+        if (e.keyCode === 13) {
+            $("#searchMovieBtn").click();
+        }
+    });
     $("#searchMovieBtn").click(function() {
         $("#movieInfo").hide();
         $("#movieSearchResult").show();
         console.log('searchMovieBtn');
         var titleInput = $("#titleinput").val();
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
         $.ajax({
             url : './get_movie/',
             type : "POST",
@@ -217,28 +205,26 @@ $(function() {
 
 
     $(".addMovieBtn").click(function() {
-        console.log('clicked add to list btn');
-        var titleToAdd = $("#resultTitle").text();
-        var yearToAdd = $("#resultYear").text();
-        var posterToAdd = $("#resultPoster").attr("src");
-        var directorToAdd = $("#resultDirector").text();
-        var plotToAdd = $("#resultPlot").text();
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
-        $.ajax({
-            url : 'add/',
-            type : "POST",
-            data : { title: titleToAdd, year: yearToAdd, poster : posterToAdd, plot: plotToAdd, director: directorToAdd }
-        }).done(function(returned_data){
-            console.log(returned_data);
-            window.location.href = '{% url 'mypage:movienight_list' movienight.pk request.user.username %}';
+        var liElements = $("ul#sortable li:not(:empty)");
 
-        });
+        if(liElements.size() >= {{ movienight.list_size }}) {
+            $("#alertMaxMovies").fadeIn(300).fadeOut(5000);
+        } else {
+            var titleToAdd = $("#resultTitle").text();
+            var yearToAdd = $("#resultYear").text();
+            var posterToAdd = $("#resultPoster").attr("src");
+            var directorToAdd = $("#resultDirector").text();
+            var plotToAdd = $("#resultPlot").text();
+            $.ajax({
+                url : 'add/',
+                type : "POST",
+                data : { title: titleToAdd, year: yearToAdd, poster : posterToAdd, plot: plotToAdd, director: directorToAdd }
+            }).done(function(returned_data){
+                console.log(returned_data);
+                window.location.href = '{% url 'mypage:movienight_list' movienight.pk request.user.username %}';
+
+            });
+        }
     });
 });
     </script>

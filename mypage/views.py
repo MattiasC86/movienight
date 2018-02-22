@@ -1,4 +1,6 @@
 import json
+from datetime import time, datetime
+from django.utils import timezone
 
 import pytz
 from django.contrib.auth.models import User
@@ -13,8 +15,15 @@ from django.views.generic import View
 from .forms import UserForm
 
 from .external_http_requests import get_by_title, search_by_title
-from .models import Movie, MovieNight, MovieNightList, MovieBacklog, Vote
+from .models import Movie, MovieNight, MovieNightList, MovieBacklog, Vote, ChatMessage
 from mnmessages.models import Message
+
+
+# Base polling
+def base_polling(request):
+    print("---------- CHECKING FOR POLLING IN SERVEER -------")
+    unread_messages = Message.objects.filter(recipient=request.user, read=False)
+    return HttpResponse(len(unread_messages.all()))
 
 
 # Public profile
@@ -144,18 +153,22 @@ def movienight(request):
     if request.user.is_authenticated:
         unread_messages = Message.objects.filter(recipient=request.user, read=False)
         if request.method == 'POST':
-            title = request.POST.get('eventname', None)
-            list_size = request.POST.get('nrmovies', None)
-            new_movienight = MovieNight(title=title, list_size=list_size, creator=request.user)
-            new_movienight.save()
-            new_movienight.users.add(request.user)
-            return redirect(reverse('mypage:movienight_event', kwargs={"pk": new_movienight.pk}))
-            # return redirect('/movienightevent/' + title + '/', {'movienight': new_movienight})
+            if request.POST.get('action'):
+                if request.POST['action'] == 'make_inactive':
+                    movienight_active_to_inactive = MovieNight.objects.get(pk=request.POST['movienight_pk'])
+                    movienight_active_to_inactive.active = False
+                    movienight_active_to_inactive.save()
+            else:
+                title = request.POST.get('eventname', None)
+                list_size = request.POST.get('nrmovies', None)
+                new_movienight = MovieNight(title=title, list_size=list_size, creator=request.user)
+                new_movienight.save()
+                new_movienight.users.add(request.user)
+                return redirect(reverse('mypage:movienight_event', kwargs={"pk": new_movienight.pk}))
         else:
-            # TODO: change creator to 'users' or somthing to include all
-            created_movienights = MovieNight.objects.filter(creator=request.user)
-            participant_movienights = MovieNight.objects.filter(users=request.user).exclude(creator=request.user)
-            invited_movinights = MovieNight.objects.filter(invited_users=request.user)
+            created_movienights = MovieNight.objects.filter(creator=request.user).order_by('-creation_date')
+            participant_movienights = MovieNight.objects.filter(users=request.user).exclude(creator=request.user).order_by('-creation_date')
+            invited_movinights = MovieNight.objects.filter(invited_users=request.user).order_by('-creation_date')
             return render(request, 'mypage/movienight.html', {'created_movienights': created_movienights, 'participant_movienights': participant_movienights,
                                                               'invited_movinights': invited_movinights, 'unread': unread_messages})
     else:
@@ -163,7 +176,9 @@ def movienight(request):
 
 
 def movienight_event(request, pk):
+    unread_messages = Message.objects.filter(recipient=request.user, read=False)
     selected_movienight = MovieNight.objects.get(pk=pk)
+    saved_chat = ChatMessage.objects.filter(movienight=selected_movienight)
     try:
         movie_lists = MovieNightList.objects.filter(movienight=selected_movienight)
     except MovieNightList.DoesNotExist:
@@ -174,31 +189,55 @@ def movienight_event(request, pk):
             x.users_voted = None
 
     if request.method == 'POST':
-        # event settings
-        if request.POST['action'] == 'settings':
-            print(request.POST.get('date'))
-            print(request.POST.get('time'))
+        # New chat message
+        if request.POST['action'] == 'check':
 
+            if int(request.POST['nr_messages']) == len(saved_chat.all()):
+                return HttpResponse("No change")
+            else:
+                chat_messages_return = []
+                for c in saved_chat.all():
+                    chat_messages_return.append({'author': c.author.username,
+                                                 'timestamp': timezone.localtime(c.timestamp).strftime("%Y-%m-%d %H:%M"),
+                                                 'text': c.text})
+                return JsonResponse(chat_messages_return, safe=False)
+
+        elif request.POST['action'] == 'save_chat_message':
+            print("AJAX HERE!")
+            print(request.POST['text'])
+            new_chat_message = ChatMessage(author=request.user, text=request.POST['text'], movienight=selected_movienight)
+            new_chat_message.save()
+            datevar = timezone.localtime(timezone.now()).strftime("%Y-%m-%d %H:%M")
+            print("DATETIME:")
+            print(datevar)
+            return JsonResponse(datevar, safe=False)
+        # Event settings
+        elif request.POST['action'] == 'settings':
             selected_movienight.description = request.POST.get('description')
             selected_movienight.string_date = request.POST.get('date')
             selected_movienight.string_time = request.POST.get('time')
             selected_movienight.date = selected_movienight.string_date + "T" + selected_movienight.string_time
             selected_movienight.location = request.POST.get('location')
             selected_movienight.decoration_url = request.POST.get('decoration')
-            selected_movienight.list_size = request.POST.get('nrmovies')
+            if selected_movienight.editable:
+                selected_movienight.list_size = request.POST.get('nrmovies')
             selected_movienight.save()
             return redirect('/movienightevent/' + pk)
         # TODO: Kolla om man verkligen ska köra filter, eller kanske ist get när bara ett av nåt ska hämtas
         # TODO: Bör skickas från typ "MovieNight" som sender, eller liknande
         # TODO: Skicka tillbaka meddelande om user är invited redan
-        if request.POST['action'] == 'inviteUser':
+        # Invite user
+        elif request.POST['action'] == 'inviteUser':
             selected_username = request.POST.get('username')
             selected_user = User.objects.get(username=selected_username)
             if selected_user in selected_movienight.invited_users.all():
+                # TODO: send back msg to user
                 print('User already invited to event!')
             if selected_user in selected_movienight.users.all():
+                # TODO: send back msg to user
                 print('User has already accepted an invitation to the event!')
             else:
+                # TODO: send back msg to user
                 selected_movienight.invited_users.add(selected_user)
                 selected_movienight.save()
                 new_message = Message(sender=request.user, recipient=selected_user, title="Invitation to MovieNight event!", message="You have been invited to the Movie event " +
@@ -206,12 +245,31 @@ def movienight_event(request, pk):
                                                               "and either accept or reject the invitation.")
                 new_message.save()
             return redirect('/movienightevent/' + pk)
-    usable_date = selected_movienight.string_date
-    usable_time = selected_movienight.string_time
-    display_date = selected_movienight.string_date + " " + selected_movienight.string_time
-    return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight, "usable_date": usable_date,
-                                                           "usable_time": usable_time, "display_date": display_date,
-                                                           "movie_lists": movie_lists})
+        elif request.POST['action'] == 'accept_invitation':
+            if request.user in selected_movienight.invited_users.all():
+                selected_movienight.invited_users.remove(request.user)
+            if request.user not in selected_movienight.users.all():
+                selected_movienight.users.add(request.user)
+            return HttpResponse("Invited user is now a participant")
+        elif request.POST['action'] == 'decline_invitation':
+            if request.user in selected_movienight.invited_users.all():
+                selected_movienight.invited_users.remove(request.user)
+            if request.user not in selected_movienight.declined_users.all():
+                selected_movienight.declined_users.add(request.user)
+            return HttpResponse("Invited user declined invitation")
+        elif request.POST['action'] == 'result_viewable':
+            selected_movienight.result_viewable = True
+            selected_movienight.save()
+            return HttpResponse("Result btn is now viewable")
+
+    usable_date = timezone.localtime(selected_movienight.date).strftime("%Y-%m-%d")
+    usable_time = timezone.localtime(selected_movienight.date).strftime("%H:%M")
+    display_date = usable_date + " " + usable_time
+    return render(request, 'mypage/movienightevent.html', {'movienight': selected_movienight,
+                                                           "usable_date": usable_date, "usable_time": usable_time,
+                                                           "display_date": display_date, "movie_lists": movie_lists,
+                                                           "chat": saved_chat, 'unread': unread_messages})
+
 
 def movienight_event_get_vote_results(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
@@ -225,25 +283,28 @@ def movienight_event_get_vote_results(request, pk):
 
     for x in all_votes_new:
         if x.movie.pk not in sorted_movies:
-            sorted_movies.append(x.movie.pk)
+            sorted_movies.append({'movie_pk': x.movie.pk, 'nominated_by': x.user.username})
 
     x_counter = 0
     for x in sorted_movies:
         sorted_points.append(0)
         for y in all_votes_new:
-            if y.movie.pk == x:
+            if y.movie.pk == x['movie_pk']:
                 sorted_points[x_counter] += y.points
         x_counter += 1
 
     i = 0
     for x in sorted_movies:
-        movie = Movie.objects.get(pk=sorted_movies[i])
+        movie = Movie.objects.get(pk=sorted_movies[i]['movie_pk'])
         new_movie = {'pk': movie.pk, 'title': movie.title,'year': movie.release_year, 'director': movie.director,
                      'plot': movie.plot, 'poster':movie.poster}
-        final_results.append({'movie': new_movie, 'points': sorted_points[i]})
+        final_results.append({'movie': new_movie, 'points': sorted_points[i], 'nominated_by': x['nominated_by']})
         i += 1
 
     final_results.sort(key=lambda x: x['points'], reverse=True)
+    if request.user not in selected_movienight.result_viewed_users.all():
+        selected_movienight.result_viewed_users.add(request.user)
+        selected_movienight.save()
 
     return JsonResponse(final_results, safe=False)
 
@@ -257,68 +318,46 @@ def delete_movienight(request, pk):
 
 
 def movienight_list(request, pk, username):
+    unread_messages = Message.objects.filter(recipient=request.user, read=False)
     selected_movienight = MovieNight.objects.get(pk=pk)
     selected_user = User.objects.get(username=username)
-    print("Now views.movienight_list")
-
-    if request.method == 'POST':
-        if request.POST.get('singleResultBtn'):
-            title_input = request.POST.get('titleinput', None)
-            movie = get_by_title(title_input)
-
-            try:
-                movie_list = MovieNightList.objects.get(user=request.user, movienight=selected_movienight)
-            except MovieNightList.DoesNotExist:
-                movie_list = None
-
-            return render(request, 'mypage/movienight_list.html',
-                          {'movienight': selected_movienight, 'movie': movie, 'titleinput': title_input, 'list': movie_list})
-        #elif request.POST.get('multipleResultsBtn'):
-            #title_input = request.POST.get('titleinput', None)
-            #movies = search_by_title(title_input)
-
-            #try:
-               # m_backlog = MovieBacklog.objects.filter(user=request.user)
-          #  except MovieBacklog.DoesNotExist:
-            #    m_backlog = None
-
-           # return render(request, 'mypage/backlog.html',
-              #            {'movies': movies, 'titleinput': title_input, 'm_backlog': m_backlog,
-                  #         'unread': unread_messages})
-
-        print(request.POST)
-        moviepk = request.POST.get('movieToDelete', None)
-        movielistpk = request.POST.get('movieList', None)
-
-        try:
-            movie = Movie.objects.get(pk=moviepk)
-        except Movie.DoesNotExist:
-            movie = None
-
-        try:
-            movie_list = MovieNightList.objects.get(pk=movielistpk)
-        except MovieNightList.DoesNotExist:
-            movie_list = None
-
-        if movie:
-            print('movie exists. Will now delete.')
-            movie_list.movies_set.remove(movie)
-        # TODO else: Send msg back to client
-
-        # TODO: Send httprequest back, this one isnt rendering anyway, ajax is in template file...
-        return render(request, 'mypage/movienight.html')
-
-
     try:
         movie_list = MovieNightList.objects.get(user=selected_user, movienight=selected_movienight)
     except MovieNightList.DoesNotExist:
         movie_list = None
 
+    if request.method == 'POST':
+
+        if request.POST.get('movieToDelete'):
+            moviepk = request.POST.get('movieToDelete', None)
+            movielistpk = request.POST.get('movieList', None)
+
+            try:
+                movie = Movie.objects.get(pk=moviepk)
+            except Movie.DoesNotExist:
+                movie = None
+
+            try:
+                movie_list = MovieNightList.objects.get(pk=movielistpk)
+            except MovieNightList.DoesNotExist:
+                movie_list = None
+
+            if movie:
+                print('movie exists. Will now delete.')
+                movie_list.movies.remove(movie)
+            # TODO else: Send msg back to client
+
+
+
+
+
+    print("RENDER MOVIENIGHT LIST")
     return render(request, 'mypage/movienight_list.html', {'movienight': selected_movienight, 'user': selected_user,
-                                                           'list': movie_list})
+                                                           'list': movie_list, 'unread': unread_messages})
 
 
 def movienight_list_vote(request, pk, username):
+    unread_messages = Message.objects.filter(recipient=request.user, read=False)
     selected_movienight = MovieNight.objects.get(pk=pk)
     selected_user = User.objects.get(username=username)
     try:
@@ -333,7 +372,6 @@ def movienight_list_vote(request, pk, username):
     print(previous_vote)
 
     if request.method == 'POST':
-        # TODO: Om personen redan röstat på denna lista ska det ej gå igenom. movienight är onödigt att ha med, finns sparat i movie_list
         print("vote submit!")
 
 
@@ -349,12 +387,14 @@ def movienight_list_vote(request, pk, username):
                                 movie=selected_movie, points=x['points'])
                 new_vote.save()
                 print("New vote saved!")
+                movie_list.save()
             movie_list.users_voted.add(request.user)
+            movie_list.editable = False
             movie_list.save()
 
     return render(request, 'mypage/movie_list_voting.html', {'movienight': selected_movienight,
                                                              'list_user': selected_user, 'list': movie_list,
-                                                             'voted': previous_vote})
+                                                             'voted': previous_vote, 'unread': unread_messages})
 
 def movienight_list_add(request, pk, username):
     selected_movienight = MovieNight.objects.get(pk=pk)
@@ -397,6 +437,8 @@ def movienight_list_add(request, pk, username):
         movie_list = MovieNightList(user=request.user, movienight=selected_movienight)
         movie_list.save()
         movie_list.movies.add(new_list_movie)
+        selected_movienight.editable = False
+        selected_movienight.save()
 
     # TODO: Should sent json back to not having to reload page
     #return JsonResponse(new_list_movie, safe=False)
@@ -554,6 +596,78 @@ def get_movie(request, pk, username):
     result = get_by_title(title_input)
     print(result)
     return JsonResponse(result)
+
+
+def get_movie2(request):
+    title = request.POST.get('title')
+    year = request.POST.get('year')
+
+    # Check if movie is in db
+    try:
+        movie_in_db = Movie.objects.get(title=title, release_year=year)
+    except Movie.DoesNotExist:
+        movie_in_db = None
+
+    # If in db, return it
+    if movie_in_db:
+        return_movie = {'title': movie_in_db.title, 'year': movie_in_db.release_year, 'director': movie_in_db.director,
+                    'poster': movie_in_db.poster, 'plot':movie_in_db.plot, 'pk': movie_in_db.pk}
+    else:
+        return_movie = get_by_title(title)
+
+    return JsonResponse(return_movie)
+
+
+def save_movie_to_list(request):
+    option = request.POST.get('option')
+    movie_pk = request.POST.get('movie_pk')
+    try:
+        movie = Movie.objects.get(pk=movie_pk)
+    except Movie.DoesNotExist:
+        movie = None
+        print("--- MOVIE WITH PK " + movie_pk + " DOES NOT EXIST IN DATABASE ---")
+
+        if option == 'backlog':
+            print("Save to backlog")
+            new_moviebacklog = MovieBacklog(movie=movie, user=request.user)
+            new_moviebacklog.save()
+
+        elif option == 'movienight_list':
+            print("Save to movienight_list")
+            movienight_pk = request.POST.get('movienight_pk')
+            movienight = MovieNight.objects.get(pk=movienight_pk)
+
+            # Check movienight list does not exist, create one
+            try:
+                movienight_list = MovieNightList.objects.get(user=request.user, movienight=movienight)
+            except MovieNightList.DoesNotExist:
+                movienight_list = None
+            if not movienight_list:
+                movienight_list = MovieNightList(user=request.user, movienight=movienight)
+                movienight_list.save()
+
+            movienight_list.movies.add(movie)
+            movienight_list.save()
+
+        elif option == 'custom_list':
+            print("Save to custom list")
+            # TODO: custom_list_pk = request.POST.get('custom_list_pk')
+            # TODO: movie_pks = request.post.GET('movie_pks')
+            # TODO: movies = []
+            # TODO: for pk in movie_pks:
+            # TODO:     movies.push(Movie.objects.get(pk=pk)
+            # TODO: try:
+            # TODO:     custom_list = CustomList.objects.get(pk=custom_list_pk)
+            # TODO: except custom_list.DoesNotExist:
+            # TODO:     custom_list = None
+            # TODO: for m in movies:
+            # TODO:     custom_list.movies.add(m)
+            # TODO:
+            # TODO: DELETE ABOVE IF ADDING JUST ONE MOVIE TO CREATED LIST. DO BELOW INSTEAD
+            # TODO: custom_list_pk = request.POST.get('custom_list_pk')
+            # TODO: custom_list = CustomList.objects.get(pk=custom_list_pk)
+            # TODO: custom_list.movies.add(movie)
+            # TODO: custom_list.save()
 
 
 def get_movies(request):

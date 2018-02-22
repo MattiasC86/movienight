@@ -7,6 +7,9 @@ urlpatterns = [
     # /
     url(r'^$', views.index, name='index'),
 
+    # base polling
+    url(r'^base_polling/$', views.base_polling, name='base_polling'),
+
     # user account management
     url(r'^register/$', views.UserFormView.as_view(), name='register'),
     url(r'^login/$', views.login_view, name='login'),
@@ -39,6 +42,8 @@ urlpatterns = [
     # /mycouch/movienight
     url(r'^mycouch/movienight/', views.movienight, name='movienight'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/$', views.movienight_event, name='movienight_event'),
+    # save chat msg
+    url(r'^movienightevent/(?P<pk>[0-9]+)/savechatmsg/$', views.movienight_event, name='movienight_event_save_chat_msg'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/settings/$', views.movienight_event, name='movienight_event_settings'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/inviteuser/$', views.movienight_event, name='movienight_event_invite_user'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/get_vote_results/$', views.movienight_event_get_vote_results, name='movienight_event_get_vote_results'),

@@ -12,21 +12,24 @@
         </div>
     </div>
 
-    <div class="container mt-3">
+    <div class="container-flow mt-3 ml-4 mr-4 pl-4 pr-4">
         <div class="row">
-            <div class="col-lg-8">
-                <div class="mx-auto">
+
+            <!-- MID -->
+            <div class="col-sm-8 col-md-8 col-lg-8">
+                <div class="text-center">
                     <p class="text-light">{{ movienight.description }}</p>
                     <img class="img-fluid" src="{{ movienight.decoration_url }}" alt="" style="max-height:500px">
                 </div>
-                <div class="mt-5  mb-5 mx-auto">
+                <div class="col-lg-8 mt-5 mb-5 mx-auto">
                     <h5 class="bg-dark text-light mb-0 p-1 border border-light">CHAT</h5>
-                    <div class="bg-light mb-1" style="max-height:150px;overflow:scroll" id="chatWindow">
-                        <p>User1: Hallå</p>
-                        <p>User2: Hej där!</p>
-                        <p>User3: Trevligt...</p>
-                        <p>User2: Jo rätt så.</p>
-                        <p>User3: Ja det tycker jag.</p>
+                    <div class="bg-light mb-1 pl-3" style="max-height:150px;overflow:scroll" id="chatWindow">
+                        {% if chat.all %}
+                            {% for c in chat.all %}
+                                <p class="mb-0 mt-0"><small><i class="text-muted">{{ c.timestamp|date:'Y-m-d H:i' }}</i></small></p>
+                                <p class="mt-0 mb-2"><b>{{ c.author }} </b> : {{ c.text }}</p>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                     <div class="input-group">
                         <input class="form-control col-lg-5" type="text" id="chatMessage" placeholder="Write your message...">
@@ -36,75 +39,75 @@
                     </div>
 
                 </div>
-
-
-
-
             </div>
-
-            {% comment %}<div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 ml-auto">
-                <div class="row">
-                {% for movie in movies %}
-                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 mt-3">
-                        <h6 style="color:deepskyblue">{{ movie.Title }} <span class="text-muted">({{ movie.Year }})</span></h6>
-                        <img class="img-fluid" src="{{ movie.Poster }}" alt="">
-                    <button class="btn btn-success addBacklogMultiChoiceBtn" id="{{ movie.Title }}">+ Add to backlog</button>
-                    </div>
-                {% endfor %}
-                </div>
-            </div>{% endcomment %}
-
-            {% comment %}<div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="votedMovies">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
-                        <img class="img-fluid" id="resultPoster" src="" alt="">
-                    </div>
-                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
-                        <h1 style="color:deepskyblue" id="resultTitle"></h1>
-                        <span class="text-muted">Release year: </span><span class="text-white" id="resultYear"></span>
-                        <br><span class="text-muted">Director: </span><span class="text-white" id="resultDirector"></span>
-                        <br><span class="text-muted">Plot:</span>
-                        <p class="text-white" id="resultPlot"></p>
-                        <br>
-                        <button class="btn btn-success addMovieBtn" id="resultTitle">+ Add to list</button>
-                    </div>
-                </div>
-            </div>{% endcomment %}
-
 
 
 
             <!-- RIGHT SIDE -->
-            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-4">
-                {% if movienight.creator == request.user %}
-                <div class="mb-4">
-                    <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#eventSettingsModal">Event settings</button>
-                    <button class="btn btn-outline-success" data-toggle="modal" data-target="#inviteUserModal">+ Invite user</button>
-                    <form method="post" action="{{ request.build_absolute_uri }}delete">
-                        {% csrf_token %}
-                        <button class="btn btn-outline-danger" type="submit">Delete event</button>
-                    </form>
-                    <button class="btn btn-outline-success" id ="voteResultsBtn">Calculate results</button>
-                </div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                {% if request.user in movienight.invited_users.all %}
+                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#acceptInvModal"><i class="fas fa-check" aria-hidden="true"></i> Accept invitation</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineInvModal"><i class="fas fa-times" aria-hidden="true"></i> Decline invitation</button>
+                {% endif %}
+
+                {% if request.user == movienight.creator %}
+                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#eventSettingsModal"><i class="fas fa-cog" aria-hidden="true"></i> Settings</button>
+                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#inviteUserModal"><i class="fas fa-user-plus" aria-hidden="true"></i> Invite</button>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#unlockResultBtnModal"><i class="fas fa-lock-open" aria-hidden="true"></i> Unlock results</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteEventModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>
+                    <hr class="bg-secondary">
                 {% endif %}
                 <div class="mt-4">
-                    <h5 class="bg-secondary">WHEN & WHERE</h5>
+                    <h5 class="bg-secondary p-2 pl-3 rounded-top"><i class="fas fa-clock" aria-hidden="true"></i> <i class="fas fa-map-signs" aria-hidden="true"></i> Time & place </h5>
                     <span class="text-light">{{ display_date }}<span class="text-muted"> @ </span>{{ movienight.location }}</span>
                 </div>
 
                 <div class="mt-4">
-                    <h5 style="background:limegreen">PARTICIPANTS</h5>
-                    <a href="/user/{{ movienight.creator.username }}" class="text-white">{{ movienight.creator.username }} <span style="color:deepskyblue">(Creator)</span></a>
-                </div>
-                {% for u in movienight.users.all %}
                     <div>
-                        <a href="/user/{{ u.username }}" class="text-white">{{ u.username }}</a>
+                        <h5 class="p-2 pl-3 rounded-top" style="background:limegreen"><i class="fas fa-users" aria-hidden="true"></i> Participants</h5>
                     </div>
-                {% endfor %}
+                    <div class="row">
+                        <div class="col-lg-6 mt-2">
+                            <div>
+                                <p class="mb-0" style="color:limegreen"><i class="fas fa-check"></i> ACCEPTED:</p>
+                            </div>
+                            {% for u in movienight.users.all %}
+                                <div>
+                                    <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue">(Creator)</span> {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% if movienight.invited_users.all %}
+                                <div class="mt-2">
+                                    <p class="mb-0" style="color:limegreen"><i class="fas fa-address-card"></i> INVITED:</p>
+                                </div>
+                                {% for u in movienight.invited_users.all %}
+                                    <div>
+                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue">(Creator)</span> {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            {% if movienight.declined_users.all %}
+                                <div class="mt-2">
+                                    <p class="mb-0" style="color:red"><i class="fas fa-times"></i> DECLINED:</p>
+                                </div>
+                                {% for u in movienight.declined_users.all %}
+                                    <div>
+                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue">(Creator)</span> {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-4 mb-4">
-                    <h5 style="background:orange">SUBMITTED MOVIE LISTS</h5>
+                    <h5 class="p-2 pl-3 rounded-top" style="background:orange"><i class="fas fa-list-ol" aria-hidden="true"></i> Movie Lists</h5>
                     <p class="text-muted">Max number of movies to nominate per user: <span style="color:orange"> {{ movienight.list_size }}</span></p>
-                    <a href="{{ request.user.username }}/" class="text-white">Edit your movie list</a>
+                    {% if request.user in movienight.users.all %}
+                        <a href="{{ request.user.username }}/" class="text-white">Edit your movie list</a>
+                    {% endif %}
                 </div>
                 <span style="color:orange">VOTE:</span>
                 {% for u in movienight.users.all %}
@@ -119,10 +122,12 @@
                         {% endfor %}
                     </div>
                 {% endfor %}
+                <hr class="bg-secondary">
+                <button class="btn btn-warning" id="voteResultsBtn" {% if not movienight.result_viewable %} style="display:none" {% endif %}>Reveal voting results!</button>
             </div>
         </div>
     </div>
-    <div class="container" id="votedMovies">
+    <div class="container" id="votedMovies" {% if request.user not in movienight.result_viewed_users.all %} style="display:none" {% endif %}>
         <h2 class="text-info text-center">Voting Results</h2>
         <hr class="bg-light">
     </div>
@@ -133,12 +138,13 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content" style="background:deepskyblue">
       <div class="modal-header bg-dark" style="color:deepskyblue">
-        <h5 class="modal-title" id="exampleModalLabel">Event settings</h5>
+        <h4 class="modal-title" id="exampleModalLabel">Settings</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body bg-dark">
+      {% if not movienight.editable %} <p class="text-warning pl-2 pr-2">Because at least one movie list is already created, you can no longer change max number of movies users can nominate.</p> {% endif %}
         <form class="form-horizontal" role="form" action="settings/" method="post">
                 {% csrf_token %}
                 <div class="form-group">
@@ -167,7 +173,7 @@
                         </div>
                         <label class="control-label col-sm-12 text-muted mt-2">Max number of movies users can nominate:</label>
                         <div class="col-sm-10">
-                            <select name="nrmovies" id="">
+                            <select name="nrmovies" id="listSizeInput" {% if not movienight.editable %} disabled {% endif %}>
                                 <option value="1"> 1 </option>
                                 <option value="2"> 2 </option>
                                 <option value="3"> 3 </option>
@@ -175,17 +181,37 @@
                                 <option value="5"> 5 </option>
                             </select>
                         </div>
-                        <br>
-                        <div class="col-sm-10">
-                            <button class="btn btn-primary" type="submit" name="action" value="settings">Save settings!</button>
-                        </div>
                     </div>
                 </div>
+            <div class="modal-footer bg-dark">
+                <button class="btn btn-success" type="submit" name="action" value="settings">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
-            </form>
+<!-- Delete Event Modal -->
+<div class="modal fade" id="deleteEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h5 class="modal-title" id="exampleModalLabel">Delete event</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark text-light">
+        <h4>Are you sure you want to delete this event?</h4>
       </div>
       <div class="modal-footer bg-dark">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form method="post" action="{{ request.build_absolute_uri }}delete">
+            {% csrf_token %}
+            <button class="btn btn-success" type="submit">Yes</button>
+        </form>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
       </div>
     </div>
   </div>
@@ -193,34 +219,96 @@
 
 <!-- Invite User Modal ---->
 <div class="modal fade" id="inviteUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="background:deepskyblue">
+            <div class="modal-header bg-dark" style="color:deepskyblue">
+                <h5 class="modal-title" id="exampleModalLabel">Invite User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body bg-dark">
+                <form class="form-horizontal" role="form" action="inviteuser/" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <label class="control-label col-sm-12 text-muted">User to invite:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="username" placeholder="Username..." value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-dark">
+                        <button class="btn btn-success" type="submit" name="action" value="inviteUser">Send invite</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accept Invitation Modal ---->
+<div class="modal fade" id="acceptInvModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content" style="background:deepskyblue">
       <div class="modal-header bg-dark" style="color:deepskyblue">
-        <h5 class="modal-title" id="exampleModalLabel">Invite User</h5>
+        <h4 class="modal-title" id="exampleModalLabel">Confirm Accept</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body bg-dark">
-        <form class="form-horizontal" role="form" action="inviteuser/" method="post">
-                {% csrf_token %}
-                <div class="form-group">
-                    <div class="col-sm-10">
-                        <label class="control-label col-sm-12 text-muted">User to invite:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="text" name="username" placeholder="Username..." value="">
-                        </div>
-                        <br>
-                        <div class="col-sm-10">
-                            <button class="btn btn-primary" type="submit" name="action" value="inviteUser">Invite user</button>
-                        </div>
-                    </div>
-                </div>
-
-            </form>
+      <div class="modal-body bg-dark text-light">
+        <h5>Are you sure you want to join this event?</h5>
       </div>
       <div class="modal-footer bg-dark">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" id="acceptInvBtn">Yes</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Decline Invitation Modal ---->
+<div class="modal fade" id="declineInvModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h4 class="modal-title" id="exampleModalLabel">Confirm Decline</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark text-light">
+        <h5>Are you sure you want to decline the invitation?</h5>
+      </div>
+      <div class="modal-footer bg-dark">
+        <button class="btn btn-success" id="declineInvBtn">Yes</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Unlock Result Button Modal ---->
+<div class="modal fade" id="unlockResultBtnModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h4 class="modal-title" id="exampleModalLabel">Unlock 'Voting results' button</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark text-light">
+        <h5>Unlock the button <button class="btn btn-warning">Reveal voting results!</button> for all users?</h5>
+          <p>This button will appear on the the event page for all participants. Clicking it will reveal the
+              final results of the voting.</p>
+          <p>After clicking the button once, the button will disappear and the results will always be shown on the page.</p>
+      </div>
+      <div class="modal-footer bg-dark">
+        <button class="btn btn-success" id="unlockResultBtnBtn">Yes</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
       </div>
     </div>
   </div>
@@ -228,105 +316,183 @@
 
     <script>
         $(function() {
-            $("#votedMovies").hide();
-             $('[data-toggle="tooltip"]').tooltip();
+            loadCRF();
 
-            //CSRF
-            function getCookie(name) {
-                var cookieValue = null;
-                if (document.cookie && document.cookie != '') {
-                    var cookies = document.cookie.split(';');
-                    for (var i = 0; i < cookies.length; i++) {
-                        var cookie = jQuery.trim(cookies[i]);
-                        // Does this cookie string begin with the name we want?
-                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
+            {% if request.user in movienight.result_viewed_users.all %}
+                $.ajax({
+                    url : './get_vote_results/',
+                    type : "GET"
+                }).done(function(returned_data){
+                    for(var i = 0; i < returned_data.length; i++) {
+                        if(i == 0) {
+                            $("#votedMovies").append(
+                                '<div class="row" id="movieRow">' +
+                                getMovieDiv(returned_data[i], i, "goldenrod", 4, 3)
+                                + '</div>'
+                            );
+                        } else if(i == 1) {
+                            $("#movieRow").append(
+                                getMovieDiv(returned_data[i], i, "silver", 4, 3)
+                            );
+                        } else if(i == 2) {
+                            $("#movieRow").append(
+                                getMovieDiv(returned_data[i], i, "maroon", 4, 3)
+                            );
+                        } else {
+                            $("#movieRow").append(
+                                getMovieDiv(returned_data[i], i, "grey", 3, 5)
+                            );
                         }
                     }
-                }
-                return cookieValue;
-            }
-            var csrftoken = getCookie('csrftoken');
-            function csrfSafeMethod(method) {
-                // these HTTP methods do not require CSRF protection
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-            }
+                });
+            {% endif %}
 
+            // Polling to check for new chat msgs
+            function checkChat() {
+                $.ajax({
+                    url: ".",
+                    type: 'POST',
+                    data: {'action': 'check', 'nr_messages': $("#chatWindow > p").length / 2},
+
+                    success: function (json) {
+                        if(json != 'No change') {
+                            $("#chatWindow").empty();
+                            for(var i = 0; i < json.length; i++) {
+                               $("#chatWindow").append(
+                                    '<p class="mb-0 mt-0"><small><i class="text-muted">' + json[i].timestamp + '</i></small></p>' +
+                                    '<p class="mt-0 mb-2"><b>' + json[i].author + '</b> : ' + json[i].text + '</p>'
+                               )
+
+                            }
+                            $('#chatWindow').stop().animate({
+                                scrollTop: $('#chatWindow')[0].scrollHeight
+                            }, 800);
+                        }
+                    }
+                });
+                setTimeout(checkChat, 3000)
+            }
+            checkChat();
+
+            $("#listSizeInput").val({{ movienight.list_size }});
+            $("#chatWindow").scrollTop($('#chatWindow')[0].scrollHeight);
+
+
+            $("#chatMessage").keyup(function(e) {
+                e.preventDefault();
+                if (e.keyCode === 13) {
+                    $("#sendMessageBtn").click();
+                }
+            });
             $("#sendMessageBtn").click(function() {
                 var text = $("#chatMessage").val();
                 console.log(text);
-                $("#chatWindow").append('<p><b> {{ user.username }} </b>( <i>{% now "D M Y H:i" %}</i> ) : ' + text + '</p>')
-                $('#chatWindow').stop().animate({
-                    scrollTop: $('#chatWindow')[0].scrollHeight
-                }, 800);
-                $("#chatMessage").val("");
+                $.ajax({
+                    url : './savechatmsg/',
+                    type : "POST",
+                    dataType: "json",
+                    data : { 'text': text, 'action': 'save_chat_message' }
+                }).done(function(timeNow){
+                    //console.log(returned_data);
+                    $("#chatWindow").append('<p class="mb-0 mt-0"><small><i class="text-muted">' + timeNow + '</i></small></p>');
+                    $("#chatWindow").append('<p class="mt-0 mb-2"><b>{{ user.username }} </b> : ' + text + '</p>');
+                    $('#chatWindow').stop().animate({
+                        scrollTop: $('#chatWindow')[0].scrollHeight
+                    }, 800);
+                    $("#chatMessage").val("");
+                });
             });
 
+            $("#acceptInvBtn").click(function() {
+               $.ajax({
+                   url : '.',
+                   type : "POST",
+                   data : { 'action': 'accept_invitation' }
+               }).done(function(returned_data) {
+                    console.log(returned_data);
+                    window.location.reload();
+               });
+            });
+            $("#declineInvBtn").click(function() {
+               $.ajax({
+                   url : '.',
+                   type : "POST",
+                   data : { 'action': 'decline_invitation' }
+               }).done(function(returned_data) {
+                    console.log(returned_data);
+                    window.location.reload();
+               });
+            });
+
+            $("#unlockResultBtnBtn").click(function() {
+                //result_viewable -> true
+                $.ajax({
+                    url : '.',
+                    type : 'POST',
+                    data : { 'action' : 'result_viewable' }
+                }).done(function(returned_data) {
+                    window.location.reload();
+                });
+            });
+
+            function getMovieDiv (vote, index, color, colSize, hSize) {
+                var trophy = '';
+                if(index < 3) {
+                    trophy = '<i class="fas fa-trophy" aria-hidden="true" style="color:' + color + '"></i> '
+                }
+
+                return '<div class="col-lg-' + colSize + ' p-0 mb-4">' +
+                            '<div>' +
+                                '<div class="col-lg-12 text-center">' +
+                                    '<h' + hSize + ' class="text-light mb-0 pt-1 pb-1">' + trophy + vote.points + ' points</h' + hSize + '>' +
+                                    '<p class="text-light mb-0 pt-1 pb-1">' + vote.movie.title + ' (' + vote.movie.year + ')</p>' +
+                                    '<p class="text-light mb-0 pt-1 pb-1">Nominated by <a href="/user/' + vote.nominated_by + '" style="color:limegreen">' + vote.nominated_by + '</a></p>' +
+                                '</div>' +
+                                '<div class="col-lg-12 text-center">' +
+                                    '<img class="img-fluid text-light text-center" id="resultPoster" data-toggle="tooltip" title="Teee" src="' + vote.movie.poster + '" alt="Missing movie poster">' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+            }
 
             // Calculate votes, show results
             $("#voteResultsBtn").click(function() {
-            console.log('voteResultsBtn');
-            {% comment %}$.ajaxSetup({
-                beforeSend: function(xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                $("#votedMovies").finish();
+                $("#votedMovies").hide();
+                $("#votedMovies").empty();
+                console.log('voteResultsBtn');
+                $.ajax({
+                    url : './get_vote_results/',
+                    type : "GET"
+                }).done(function(returned_data){
+                    for(var i = 0; i < returned_data.length; i++) {
+                        if(i == 0) {
+                            $("#votedMovies").append(
+                                '<div class="row" id="movieRow">' +
+                                getMovieDiv(returned_data[i], i, "goldenrod", 4, 3)
+                                + '</div>'
+                            );
+                        } else if(i == 1) {
+                            $("#movieRow").append(
+                                getMovieDiv(returned_data[i], i, "silver", 4, 3)
+                            );
+                        } else if(i == 2) {
+                            $("#movieRow").append(
+                                getMovieDiv(returned_data[i], i, "maroon", 4, 3)
+                            );
+                        } else {
+                            $("#movieRow").append(
+                                getMovieDiv(returned_data[i], i, "grey", 3, 5)
+                            );
+                        }
                     }
-                }
-            });{% endcomment %}
-            $.ajax({
-                url : './get_vote_results/',
-                type : "GET"
-            }).done(function(returned_data){
-
-                var votes = returned_data;
-
-                console.log(votes[0].movie.poster);
-
-                function getMovieDiv (index, color, colSize, hSize, icon) {
-
-                    return '<div class="col-lg-' + colSize + ' p-0 mb-4">' +
-                                '<div>' +
-                                    '<div class="col-lg-12 text-center">' +
-                                        '<h' + hSize + ' class="text-light mb-0 pt-1 pb-1">' + icon + votes[index].points + ' points</h' + hSize + '>' +
-                                        '<p class="text-light mb-0 pt-1 pb-1">' + votes[index].movie.title + ' (' + votes[index].movie.year + ')</p>' +
-                                    '</div>' +
-                                    '<div class="col-lg-12 text-center">' +
-                                        '<img class="img-fluid text-light text-center" id="resultPoster" data-toggle="tooltip" title="Teee" src="' + votes[index].movie.poster + '" alt="Missing movie poster">' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>';
-                }
-
-                //TODO: SORT BY POINTS
-                for(var i = 0; i < returned_data.length; i++) {
-                    if(i == 0) {
-                        $("#votedMovies").append(
-                            '<div class="row" id="movieRow">' +
-                            getMovieDiv(i, "goldenrod", 4, 3, '<i class="fas fa-trophy" aria-hidden="true" style="color:gold"></i> ')
-                            + '</div>'
-                        );
-                    } else if(i == 1) {
-                        $("#movieRow").append(
-                            getMovieDiv(i, "silver", 4, 3, '<i class="fas fa-trophy" aria-hidden="true" style="color:silver"></i> ')
-                        );
-                    } else if(i == 2) {
-                        $("#movieRow").append(
-                            getMovieDiv(i, "maroon", 4, 3, '<i class="fas fa-trophy" aria-hidden="true" style="color:maroon"></i> ')
-                        );
-                    } else {
-                        $("#movieRow").append(
-                            getMovieDiv(i, "grey", 2, 5, "")
-                        );
-                    }
-                }
-                $("#votedMovies").show();
-                    setTimeout(function(){
-                        var votedMoviesY = $("#votedMovies").offset().top;
-                        window.scrollTo(0, votedMoviesY);
-                    }, 70);
+                    $("#votedMovies").fadeIn(6000);
+                        setTimeout(function(){
+                            var votedMoviesY = $("#votedMovies").offset().top;
+                            window.scrollTo(0, votedMoviesY);
+                        }, 70);
+                });
             });
-        });
 
         });
 

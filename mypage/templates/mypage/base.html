@@ -9,8 +9,9 @@
 
 
     <link rel="stylesheet" href="../../../jquery-ui-1.12.1.custom/jquery-ui.min.css">
-    <script src="../../../jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
-    <script src="../../../jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.8.21/jquery-ui.min.js"></script>
+    <script src="../../../jquery.ui.touch-punch.min.js"></script>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
@@ -21,6 +22,70 @@
 <body>
 
     {% include 'mypage/navbar.html' %}
+
+    <script>
+        // Polling server to check for new unread messages
+        $(function() {
+            $("#unreadMail").hide();
+            $("#unreadCount").hide();
+            {% if unread.count > 0 %}
+                $("#unreadMail").show();
+                $("#unreadCount").show();
+                $("#unreadCount").text({{ unread.count }});
+            {% endif %}
+
+            function checkBase() {
+                $.ajax({
+                    url: "/base_polling/",
+                    type: 'GET',
+
+                    success: function (newMessages) {
+                        if(newMessages == 0) {
+                            $("#unreadMail").hide();
+                            $("#unreadCount").hide();
+                        } else {
+                            $("#unreadMail").show();
+                            $("#unreadCount").show();
+                            $("#unreadCount").text(newMessages);
+                        }
+                    }
+                });
+                setTimeout(checkBase, 5000);
+            }
+           checkBase()
+        });
+
+        function loadCRF() {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            var csrftoken = getCookie('csrftoken');
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+        }
+    </script>
 
 {% block body %}
 {% endblock %}
