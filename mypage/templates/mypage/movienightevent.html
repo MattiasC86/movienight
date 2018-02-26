@@ -4,48 +4,11 @@
 
 {% block body %}
 
-    <div class="container">
-        <div class="col-lg-12 mt-3">
-            <h1 style="color:deepskyblue">{{ movienight.title }}</h1>
-            <p class="text-muted">Created {{ movienight.creation_date }} by <a href="/user/{{ movienight.creator.username }}" style="color:limegreen">{{ movienight.creator.username }}</a></p>
-            <hr class="bg-secondary">
-        </div>
-    </div>
-
-    <div class="container-flow mt-3 ml-4 mr-4 pl-4 pr-4">
-        <div class="row">
-
-            <!-- MID -->
-            <div class="col-sm-8 col-md-8 col-lg-8">
-                <div class="text-center">
-                    <p class="text-light">{{ movienight.description }}</p>
-                    <img class="img-fluid" src="{{ movienight.decoration_url }}" alt="" style="max-height:500px">
-                </div>
-                <div class="col-lg-8 mt-5 mb-5 mx-auto">
-                    <h5 class="bg-dark text-light mb-0 p-1 border border-light">CHAT</h5>
-                    <div class="bg-light mb-1 pl-3" style="max-height:150px;overflow:scroll" id="chatWindow">
-                        {% if chat.all %}
-                            {% for c in chat.all %}
-                                <p class="mb-0 mt-0"><small><i class="text-muted">{{ c.timestamp|date:'Y-m-d H:i' }}</i></small></p>
-                                <p class="mt-0 mb-2"><b>{{ c.author }} </b> : {{ c.text }}</p>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    <div class="input-group">
-                        <input class="form-control col-lg-5" type="text" id="chatMessage" placeholder="Write your message...">
-                        <span class="input-group-btn">
-                            <button class="btn btn-secondary" type="button" id="sendMessageBtn">Send</button>
-                        </span>
-                    </div>
-
-                </div>
-            </div>
-
-
-
-            <!-- RIGHT SIDE -->
-            <div class="col-sm-4 col-md-4 col-lg-4">
-                {% if request.user in movienight.invited_users.all %}
+    <div class="container-flow">
+        <div class="col-lg-12 mt-3 text-center">
+            <h1 class="mb-0" style="color:deepskyblue">{{ movienight.title }}</h1>
+            <p class="text-muted mt-0 mb-1">Created {{ movienight.creation_date }} by <a href="/user/{{ movienight.creator.username }}" style="color:limegreen">{{ movienight.creator.username }}</a></p>
+            {% if request.user in movienight.invited_users.all %}
                     <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#acceptInvModal"><i class="fas fa-check" aria-hidden="true"></i> Accept invitation</button>
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineInvModal"><i class="fas fa-times" aria-hidden="true"></i> Decline invitation</button>
                 {% endif %}
@@ -53,13 +16,26 @@
                 {% if request.user == movienight.creator %}
                     <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#eventSettingsModal"><i class="fas fa-cog" aria-hidden="true"></i> Settings</button>
                     <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#inviteUserModal"><i class="fas fa-user-plus" aria-hidden="true"></i> Invite</button>
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#unlockResultBtnModal"><i class="fas fa-lock-open" aria-hidden="true"></i> Unlock results</button>
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteEventModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>
-                    <hr class="bg-secondary">
+                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#nextPhaseModal"><i class="fas fa-lock-open" aria-hidden="true"></i> Next phase</button>
                 {% endif %}
-                <div class="mt-4">
-                    <h5 class="bg-secondary p-2 pl-3 rounded-top"><i class="fas fa-clock" aria-hidden="true"></i> <i class="fas fa-map-signs" aria-hidden="true"></i> Time & place </h5>
-                    <span class="text-light">{{ display_date }}<span class="text-muted"> @ </span>{{ movienight.location }}</span>
+            <hr class="bg-secondary">
+        </div>
+    </div>
+
+    <div class="container-flow mt-3 ml-4 mr-4 pl-4 pr-4">
+        <div class="row">
+
+            <!------------------ LEFT ---------------->
+            <div class="col-lg-3 mb-4 mx-auto">
+                <div>
+                    <h5 class="bg-light p-2 pl-3 rounded-top"><i class="fas fa-info-circle" aria-hidden="true"></i> Info </h5>
+                    <p class="text-muted ml-2 mt-0 mb-0">Description:</p>
+                    <p class="text-light ml-2">{{ movienight.description }}</p>
+                    <p class="text-muted ml-2 mt-0 mb-0">Time & place:</p>
+                    <p class="text-light ml-2">{{ display_date }}<span class="text-muted"> @ </span>{{ movienight.location }}</p>
+                    <p class="text-muted ml-2">Max nominations per user: <span class="text-light"> {{ movienight.list_size }}</span></p>
+                    <p class="text-muted ml-2 mt-0 mb-0">Current phase: <span class="text-light" id="infoCurrentPhase"> {{ movienight.current_phase }}</span></p>
                 </div>
 
                 <div class="mt-4">
@@ -101,35 +77,90 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="mt-4 mb-4">
-                    <h5 class="p-2 pl-3 rounded-top" style="background:orange"><i class="fas fa-list-ol" aria-hidden="true"></i> Movie Lists</h5>
-                    <p class="text-muted">Max number of movies to nominate per user: <span style="color:orange"> {{ movienight.list_size }}</span></p>
-                    {% if request.user in movienight.users.all %}
-                        <a href="{{ request.user.username }}/" class="text-white">Edit your movie list</a>
-                    {% endif %}
+            <!------------- MID ------------------->
+            <div class="col-sm-8 col-md-8 col-lg-6">
+                <div class="text-center">
+                    <img class="img-fluid rounded" src="{{ movienight.decoration_url }}" alt="" style="max-height:500px">
                 </div>
-                <span style="color:orange">VOTE:</span>
+                <div class="mt-4 mb-5 mx-auto">
+                    <h5 class="bg-dark text-light mb-0 p-1 border border-light">CHAT</h5>
+                    <div class="bg-light mb-1 pl-3" style="max-height:175px;overflow:scroll" id="chatWindow">
+                        {% if chat.all %}
+                            {% for c in chat.all %}
+                                <p class="mb-0 mt-0"><small><i class="text-muted">{{ c.timestamp|date:'Y-m-d H:i' }}</i></small></p>
+                                <p class="mt-0 mb-2"><b>{{ c.author }} </b> : {{ c.text }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="input-group">
+                        <input class="form-control col-lg-5" type="text" id="chatMessage" placeholder="Write your message...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="button" id="sendMessageBtn">Send</button>
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            <!-- RIGHT SIDE -->
+            <div class="col-sm-4 col-md-4 col-lg-3">
+
+                <h5 class="p-2 pl-3 rounded-top" id="nominateHeader" style="background:grey">1. <i class="fas fa-list" aria-hidden="true"></i> Nominate</h5>
+                <div class="mb-2" id="nominateDiv" style="display:none">
+                    {% if request.user in movienight.users.all %}
+                        <a href="{{ request.user.username }}/" type="button" class="ml-2 btn btn-warning btn-sm">Edit my nominations</a>
+                    {% endif %}
+                    <p class="text-light ml-4"><input type="checkbox" id="inputNominationDone"
+                        {% for l in movie_lists.all %}
+                            {% if l.user.username == request.user.username %}
+                                {% if l.marked_done %}
+                                    checked
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+
+                    > My list is complete</p>
+                    <p class="text-muted ml-2 mt-1 mb-0"><small>Done with nominations list:</small></p>
+                    <p class="ml-2" id="usersNominationsDone" style="color:limegreen">
+                        {% for l in movie_lists %}
+                            {% if l.marked_done %}
+                                <span id="{{ l.user.username }}"><small><i class="fas fa-check-circle" aria-hidden="true"></i> {{ l.user.username }} </small></span>
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+
+                <h5 class="p-2 pl-3 rounded-top" id="voteHeader" style="background:grey">2. <i class="fas fa-sort-numeric-down" aria-hidden="true"></i> Vote</h5>
+                <div class="mb-2" id="voteDiv" style="display:none">
                 {% for u in movienight.users.all %}
-                    <div>
+                    <div class="ml-2">
                         <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a>
                         {% for l in movie_lists %}
                             {% if u.username == l.user.username %}
                                 {% if l.users_voted.all %}
-                                    <span class="text-muted">(Have voted: {% for uv in l.users_voted.all %} {{ uv.username }}{% endfor %})</span>
+                                    <p class="ml-2" style="color:limegreen"><small><span class="text-muted">Voted:</span> {% for uv in l.users_voted.all %} <i class="fas fa-check-circle" aria-hidden="true"></i> {{ uv.username }}{% endfor %}</small></p>
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
                     </div>
                 {% endfor %}
-                <hr class="bg-secondary">
-                <button class="btn btn-warning" id="voteResultsBtn" {% if not movienight.result_viewable %} style="display:none" {% endif %}>Reveal voting results!</button>
+                </div>
+
+                <h5 class="p-2 pl-3 rounded-top" id="resultsHeader" style="background:grey">3. <i class="fas fa-eye" aria-hidden="true"></i> Results</h5>
+                <div class="mb-2" id="resultsDiv" style="display:none">
+                    <button class="btn btn-primary btn-sm ml-4" id="voteResultsBtn">Reveal voting results!</button>
+                </div>
+
             </div>
         </div>
     </div>
     <div class="container" id="votedMovies" {% if request.user not in movienight.result_viewed_users.all %} style="display:none" {% endif %}>
-        <h2 class="text-info text-center">Voting Results</h2>
-        <hr class="bg-light">
+
     </div>
 
 
@@ -290,6 +321,36 @@
   </div>
 </div>
 
+<!-- Next Phase Modal ---->
+<div class="modal fade" id="nextPhaseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h4 class="modal-title" id="exampleModalLabel">Next Phase</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark text-light">
+          {% if movienight.current_phase == 1 %}
+              <p>No one will be able to edit their nomination lists once you unlocks Phase 2 - Voting.</p>
+              <p>Continue?</p>
+          {% elif movienight.current_phase == 2 %}
+              <p>Phase 3 unlocks the button <button class="btn btn-warning">Reveal voting results!</button> for all users.
+                Clicking the button will reveal the final results of the voting.</p>
+              <p>Continue?</p>
+          {% elif movienight.current_phase == 3 %}
+              <p>You are already at the final phase.</p>
+          {% endif %}
+      </div>
+      <div class="modal-footer bg-dark">
+        <button class="btn btn-success" id="nextPhaseBtn">Yes</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Unlock Result Button Modal ---->
 <div class="modal fade" id="unlockResultBtnModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -315,8 +376,28 @@
 </div>
 
     <script>
+        function activatePhase(phase) {
+            $("#nominateDiv").hide();
+            $("#voteDiv").hide();
+            $("#resultsDiv").hide();
+            $("#nominateHeader").css("background-color", "grey");
+            $("#voteHeader").css("background-color", "grey");
+            $("#resultsHeader").css("background-color", "grey");
+            if(phase == 1) {
+                $("#nominateHeader").css("background-color", "orange");
+                $("#nominateDiv").show();
+            } else if(phase == 2) {
+                $("#voteHeader").css("background-color", "yellow");
+                $("#voteDiv").show();
+            } else if(phase == 3) {
+                $("#resultsHeader").css("background-color", "deepskyblue");
+                $("#resultsDiv").show();
+            }
+        }
         $(function() {
-            loadCRF();
+            activatePhase({{ movienight.current_phase }});
+            $("#chatWindow").scrollTop($('#chatWindow')[0].scrollHeight);
+            $("#listSizeInput").val({{ movienight.list_size }});
 
             {% if request.user in movienight.result_viewed_users.all %}
                 $.ajax({
@@ -374,10 +455,6 @@
             }
             checkChat();
 
-            $("#listSizeInput").val({{ movienight.list_size }});
-            $("#chatWindow").scrollTop($('#chatWindow')[0].scrollHeight);
-
-
             $("#chatMessage").keyup(function(e) {
                 e.preventDefault();
                 if (e.keyCode === 13) {
@@ -401,6 +478,39 @@
                     }, 800);
                     $("#chatMessage").val("");
                 });
+            });
+
+            $("#inputNominationDone").change(function() {
+                if($(this).is(":checked")) {
+                   $.ajax({
+                       url : '.',
+                       type : 'POST',
+                       data : {'action' : 'nominations_done'}
+                   }).done(function() {
+                        $("#usersNominationsDone").append(
+                        '<span id="{{ request.user.username }}"><small><i class="fas fa-check-circle" aria-hidden="true"></i> {{ request.user.username }}</small></span>'
+                    );
+                   });
+                } else {
+                    $.ajax({
+                       url : '.',
+                       type : 'POST',
+                       data : {'action' : 'nominations_undone'}
+                   }).done(function() {
+                       $("#usersNominationsDone").children("#" + '{{ request.user.username }}').remove();
+
+                   });
+                }
+            });
+
+            $("#nextPhaseBtn").click(function() {
+               $.ajax({
+                   url : '.',
+                   type : 'POST',
+                   data : {'action' : 'change_phase'}
+               }).done(function(response) {
+                  window.location.reload();
+               });
             });
 
             $("#acceptInvBtn").click(function() {
@@ -445,8 +555,8 @@
                             '<div>' +
                                 '<div class="col-lg-12 text-center">' +
                                     '<h' + hSize + ' class="text-light mb-0 pt-1 pb-1">' + trophy + vote.points + ' points</h' + hSize + '>' +
-                                    '<p class="text-light mb-0 pt-1 pb-1">' + vote.movie.title + ' (' + vote.movie.year + ')</p>' +
-                                    '<p class="text-light mb-0 pt-1 pb-1">Nominated by <a href="/user/' + vote.nominated_by + '" style="color:limegreen">' + vote.nominated_by + '</a></p>' +
+                                    '<p class="text-light mb-0 pt-1 pb-0">' + vote.movie.title + ' (' + vote.movie.year + ')</p>' +
+                                    '<p class="text-muted mb-0 pt-0 pb-1"><small>Nominated by <a href="/user/' + vote.nominated_by + '" style="color:limegreen">' + vote.nominated_by + '</a></small></p>' +
                                 '</div>' +
                                 '<div class="col-lg-12 text-center">' +
                                     '<img class="img-fluid text-light text-center" id="resultPoster" data-toggle="tooltip" title="Teee" src="' + vote.movie.poster + '" alt="Missing movie poster">' +

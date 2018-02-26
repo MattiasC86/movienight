@@ -45,21 +45,26 @@ def thirty_day_hence():
 
 
 class MovieNight(models.Model):
-    title = models.CharField(max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
+    # Settings
+    title = models.CharField(max_length=100)
     date = models.DateTimeField(default=thirty_day_hence)
     location = models.CharField(max_length=100, default="Home")
     description = models.CharField(max_length=1000, default="This is the description for this MovieNight event, it can be edited by the creator of the event.")
     decoration_url = models.CharField(max_length=1000, default="https://cdn.makeuseof.com/wp-content/uploads/2015/04/movie-theater-revival-setup.jpg")
     list_size = models.IntegerField()
+    # Users
     creator = models.ForeignKey(User)
     users = models.ManyToManyField(User, related_name="participants")
     invited_users = models.ManyToManyField(User, related_name="invited_users", blank=True, null=True)
     declined_users = models.ManyToManyField(User, related_name="declined_users", blank=True, null=True)
-    active = models.BooleanField(default=True)
+    # State of event
     editable = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
     result_viewable = models.BooleanField(default=False)
     result_viewed_users = models.ManyToManyField(User, related_name="result_viewed_users", blank=True, null=True)
+    # Phase
+    current_phase = models.IntegerField(default=1)
 
     def __str__(self):
         return self.title + ' created by ' + self.creator.username
@@ -75,12 +80,29 @@ class ChatMessage(models.Model):
         return self.author.username + ' - ' + self.movienight.title + '(' + str(self.timestamp) + ')'
 
 
+class BlogPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(default=timezone.now)
+    title = models.CharField(max_length=50)
+    content = models.TextField(max_length=2000)
+
+    def __str__(self):
+        return self.user.username + ' - ' + self.title + ' (' + timezone.localtime(self.date).strftime("%Y-%m-%d %H:%M") + ')'
+
+
+class BlogPostComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    blogpost = models.ForeignKey(BlogPost, on_delete=models.CASCADE)
+    content = models.TextField(max_length=500)
+
+
 class MovieNightList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     users_voted = models.ManyToManyField(User, related_name="users_voted", blank=True, null=True)
     movienight = models.ForeignKey(MovieNight, on_delete=models.CASCADE)
     movies = models.ManyToManyField(Movie)
     editable = models.BooleanField(default=True)
+    marked_done = models.BooleanField(default=False)
 
     def __str__(self):
         return self.movienight.title + ' - ' + self.user.username

@@ -15,13 +15,12 @@ from django.views.generic import View
 from .forms import UserForm
 
 from .external_http_requests import get_by_title, search_by_title
-from .models import Movie, MovieNight, MovieNightList, MovieBacklog, Vote, ChatMessage
+from .models import Movie, MovieNight, MovieNightList, MovieBacklog, Vote, ChatMessage, BlogPost
 from mnmessages.models import Message
 
 
 # Base polling
 def base_polling(request):
-    print("---------- CHECKING FOR POLLING IN SERVEER -------")
     unread_messages = Message.objects.filter(recipient=request.user, read=False)
     return HttpResponse(len(unread_messages.all()))
 
@@ -120,18 +119,18 @@ def index(request):
 def profile(request):
     if request.user.is_authenticated:
         unread_messages = Message.objects.filter(recipient=request.user, read=False)
-        try:
-            movienight_length = len(MovieNight.objects.filter(creator=request.user))
-        except MovieNight.DoesNotExist:
-            movienight_length = 0
 
-        try:
-            backlog_length = len(MovieBacklog.objects.filter(user=request.user))
-        except MovieBacklog.DoesNotExist:
-            backlog_length = 0
+        movienights = MovieNight.objects.filter(users=request.user, active=True)
+        backlog = MovieBacklog.objects.filter(user=request.user)
+        blog_posts = BlogPost.objects.filter(user=request.user)
 
-        return render(request, 'mypage/profile.html', {'backlogLength': backlog_length, 'movienightLength': movienight_length,
-                                                       'unread': unread_messages})
+        if request.method == 'POST':
+            if request.POST['action'] == 'post_blog':
+                new_blog_post = BlogPost(user=request.user, title=request.POST['title'], content=request.POST['content'])
+                new_blog_post.save()
+
+        return render(request, 'mypage/profile.html', {'backlog': backlog, 'movienights': movienights,
+                                                       'unread': unread_messages, 'blog_posts': blog_posts})
     else:
         return redirect('mypage:login')
 
@@ -261,6 +260,37 @@ def movienight_event(request, pk):
             selected_movienight.result_viewable = True
             selected_movienight.save()
             return HttpResponse("Result btn is now viewable")
+        elif request.POST['action'] == 'change_phase':
+            if selected_movienight.current_phase < 3:
+                selected_movienight.current_phase = selected_movienight.current_phase + 1
+                selected_movienight.save()
+                return HttpResponse(selected_movienight.current_phase)
+            else:
+                return HttpResponse(3)
+        elif request.POST['action'] == 'nominations_done':
+            try:
+                list = MovieNightList.objects.get(user=request.user, movienight=selected_movienight)
+            except MovieNightList.DoesNotExist:
+                list = None
+
+            if list:
+                list.marked_done = True
+                list.save()
+                return HttpResponse("Success")
+            else:
+                return HttpResponse("Fail")
+        elif request.POST['action'] == 'nominations_undone':
+            try:
+                list = MovieNightList.objects.get(user=request.user, movienight=selected_movienight)
+            except MovieNightList.DoesNotExist:
+                list = None
+
+            if list:
+                list.marked_done = False
+                list.save()
+                return HttpResponse("Success")
+            else:
+                return HttpResponse("Fail")
 
     usable_date = timezone.localtime(selected_movienight.date).strftime("%Y-%m-%d")
     usable_time = timezone.localtime(selected_movienight.date).strftime("%H:%M")
@@ -274,41 +304,42 @@ def movienight_event(request, pk):
 def movienight_event_get_vote_results(request, pk):
     selected_movienight = MovieNight.objects.get(pk=pk)
     all_votes = Vote.objects.filter(movie_night=selected_movienight)
+    all_lists = MovieNightList.objects.filter(movienight=selected_movienight)
 
-    all_votes_new = list(all_votes.all())
-
-    sorted_movies = []
+    nominated_movies = []
     sorted_points = []
     final_results = []
 
-    for x in all_votes_new:
-        if x.movie.pk not in sorted_movies:
-            sorted_movies.append({'movie_pk': x.movie.pk, 'nominated_by': x.user.username})
+    # Make list with pairs of movie/nominated_by
+    for l in all_lists.all():
+        for m in l.movies.all():
+            nominated_movies.append({'nominated_by': l.user.username, 'movie': m})
 
+    # Make list with all points for movies
     x_counter = 0
-    for x in sorted_movies:
+    for nom_mov in nominated_movies:
         sorted_points.append(0)
-        for y in all_votes_new:
-            if y.movie.pk == x['movie_pk']:
-                sorted_points[x_counter] += y.points
+        for vote in all_votes.all():
+            if vote.movie.pk == nom_mov['movie'].pk:
+                sorted_points[x_counter] += vote.points
         x_counter += 1
 
+    # Create final results list to be returned
     i = 0
-    for x in sorted_movies:
-        movie = Movie.objects.get(pk=sorted_movies[i]['movie_pk'])
-        new_movie = {'pk': movie.pk, 'title': movie.title,'year': movie.release_year, 'director': movie.director,
+    for x in nominated_movies:
+        movie = nominated_movies[i]['movie']
+        movie_json = {'pk': movie.pk, 'title': movie.title,'year': movie.release_year, 'director': movie.director,
                      'plot': movie.plot, 'poster':movie.poster}
-        final_results.append({'movie': new_movie, 'points': sorted_points[i], 'nominated_by': x['nominated_by']})
+        final_results.append({'movie': movie_json, 'points': sorted_points[i], 'nominated_by': x['nominated_by']})
         i += 1
 
     final_results.sort(key=lambda x: x['points'], reverse=True)
+
     if request.user not in selected_movienight.result_viewed_users.all():
         selected_movienight.result_viewed_users.add(request.user)
         selected_movienight.save()
 
     return JsonResponse(final_results, safe=False)
-
-
 
 
 def delete_movienight(request, pk):
@@ -590,7 +621,7 @@ def submit(request):
     return render(request, 'mypage/mycouch.html', {'movie': movie, 'titleinput': title_input})
 
 
-def get_movie(request, pk, username):
+def get_movie(request):
     print("views.get_movie() running")
     title_input = request.POST.get('title')
     result = get_by_title(title_input)
@@ -611,7 +642,7 @@ def get_movie2(request):
     # If in db, return it
     if movie_in_db:
         return_movie = {'title': movie_in_db.title, 'year': movie_in_db.release_year, 'director': movie_in_db.director,
-                    'poster': movie_in_db.poster, 'plot':movie_in_db.plot, 'pk': movie_in_db.pk}
+                    'poster': movie_in_db.poster, 'plot': movie_in_db.plot, 'pk': movie_in_db.pk}
     else:
         return_movie = get_by_title(title)
 
@@ -673,11 +704,5 @@ def save_movie_to_list(request):
 def get_movies(request):
     title_input = request.POST.get('title')
     movies = search_by_title(title_input)
-    print('movies:')
-    print(movies)
-    try:
-        m_backlog = MovieBacklog.objects.filter(user=request.user)
-    except MovieBacklog.DoesNotExist:
-        m_backlog = None
 
-    return render(request, 'mypage/backlog.html', {'movies': movies, 'titleinput': title_input, 'm_backlog': m_backlog})
+    return JsonResponse(movies, safe=False)

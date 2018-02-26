@@ -3,19 +3,10 @@
 
 {% block body %}
     <style>
-  #sortable { list-style-type: none; margin: 0; padding: 0; }
-  #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; }
-  #sortable li span { position: absolute; }
-  </style>
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script>
-  $( function() {
-    $( "#sortable" ).sortable();
-    $( "#sortable" ).disableSelection();
-  } );
-
-  </script>
+      #sortable { list-style-type: none; margin: 0; padding: 0; }
+      #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; }
+      #sortable li span { position: absolute; }
+    </style>
 
     <div class="container">
         <div class="col-lg-12 mt-4">
@@ -50,20 +41,23 @@
                     <p class="lead text-muted">{{ list_user.username }} haven't added any movies yet.</p>
                 {% endif %}
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7" id="movieInfo">
-            <div class="row">
-                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
-                    <img class="img-fluid" src="{{ movie.Poster }}" alt="" id="infoPoster">
-                </div>
-                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
-                    <h1 style="color:deepskyblue" id="infoTitle">{{ movie.Title }}</h1>
-                    <span class="text-muted">Release year: </span><span class="text-white" id="infoYear">{{ movie.Year }}</span>
-                    <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
-                    <br><span class="text-muted">Plot:</span>
-                    <p class="text-white" id="infoPlot"></p>
+
+            <!-- Movie info -->
+            <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7" id="movieInfo" style="display:none">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                        <img class="img-fluid" src="{{ movie.Poster }}" alt="" id="infoPoster">
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+                        <h1 style="color:deepskyblue" id="infoTitle">{{ movie.Title }}</h1>
+                        <span class="text-muted">Release year: </span><span class="text-white" id="infoYear">{{ movie.Year }}</span>
+                        <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
+                        <br><span class="text-muted">Plot:</span>
+                        <p class="text-white" id="infoPlot"></p>
+                    </div>
                 </div>
             </div>
-        </div>
+
         </div>
     </div>
 
@@ -108,8 +102,7 @@
 
     <script>
         $(function() {
-            loadCRF();
-           $("#movieInfo").hide();
+           $("#sortable").sortable();
         });
 
         $("#saveVote").click(function() {
@@ -118,7 +111,7 @@
             var votes = [];
             var pointsMax = {{ movienight.list_size }};
 
-            for(var i = 0; i < liElements.size(); i++) {
+            for(var i = 0; i < liElements.length; i++) {
                 finalVotedList.push(liElements.get(i).id);
             }
 
@@ -144,7 +137,7 @@
             var votes = [];
             var pointsMax = {{ movienight.list_size }};
 
-            for(var i = 0; i < liElements.size(); i++) {
+            for(var i = 0; i < liElements.length; i++) {
                 finalVotedList.push(liElements.get(i).id);
             }
 
@@ -168,7 +161,7 @@
             });
         });
 
-        $(".movieItem").click(function() {
+        $(".movieItem").mousedown(function() {
             console.log("clicked");
             var title;
             var year;

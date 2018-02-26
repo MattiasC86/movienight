@@ -10,6 +10,8 @@ class Message(models.Model):
     message = models.CharField(max_length=10000)
     date = models.DateTimeField(default=timezone.now)
     read = models.BooleanField(default=False)
+    shown_to_sender = models.BooleanField(default=True)
+    shown_to_recipient = models.BooleanField(default=True)
 
     def __str__(self):
         return self.sender.username + ' -> ' + self.recipient.username + ' (' + str(self.date) + ')'

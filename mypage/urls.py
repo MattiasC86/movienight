@@ -52,10 +52,10 @@ urlpatterns = [
 
     # movielist
     url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/$', views.movienight_list, name='movienight_list'),
-    url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/get_movie/$', views.get_movie, name='get_movie'),
+    url(r'^get_movie/$', views.get_movie, name='get_movie'),
     # vote page
-    url(r'^movienightevent/(?P<pk>[0-9]+)/vote/(?P<username>\w+)/$', views.movienight_list_vote, name='movienight_list_vote'),
-    url(r'^movienightevent/(?P<pk>[0-9]+)/vote/(?P<username>\w+)/savevote/$', views.movienight_list_vote, name='movienight_list_vote'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/vote/(?P<username>[-\w]+)/$', views.movienight_list_vote, name='movienight_list_vote'),
+    url(r'^movienightevent/(?P<pk>[0-9]+)/vote/(?P<username>[-\w]+)/savevote/$', views.movienight_list_vote, name='movienight_list_vote'),
 
 
     url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/add/$', views.movienight_list_add, name='add_list'),

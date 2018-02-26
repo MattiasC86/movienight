@@ -9,8 +9,34 @@ from .models import Message
 def messages(request):
     unread_messages = Message.objects.filter(recipient=request.user, read=False)
     all_messages = Message.objects.filter(sender=request.user).order_by('-date') | Message.objects.filter(recipient=request.user).order_by('-date')
-    sent_messages = Message.objects.filter(sender=request.user)
-    received_messages = Message.objects.filter(recipient=request.user)
+    sent_messages = Message.objects.filter(sender=request.user, shown_to_sender=True)
+    received_messages = Message.objects.filter(recipient=request.user, shown_to_recipient=True)
+
+    if request.method == 'POST':
+        print(request.POST)
+        if request.POST['action'] == 'delete_msgs':
+            in_msgs_to_delete = request.POST.getlist('in_msgs[]')
+            out_msgs_to_delete = request.POST.getlist('out_msgs[]')
+
+            for m in in_msgs_to_delete:
+                message = Message.objects.get(pk=m)
+                message.shown_to_recipient = False
+                message.save()
+                if not message.shown_to_sender:
+                    message.delete()
+
+            for m in out_msgs_to_delete:
+                message = Message.objects.get(pk=m)
+                message.shown_to_sender = False
+                message.save()
+                if not message.shown_to_recipient:
+                    message.delete()
+
+
+            #for m in msgs_to_delete:
+            #    Message.objects.get(pk=m).delete()
+            #return HttpResponse("Deletion complete")
+
     return render(request, 'mnmessages/mnmessages.html', {'all_messages': all_messages, 'unread': unread_messages,
                                                           'outbox': sent_messages, 'inbox': received_messages})
 

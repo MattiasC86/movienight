@@ -12,27 +12,31 @@
 
     <div class="container">
         <div class="col-lg-6 mx-auto text-center">
-            <button class="btn btn-success btn-sm mt-3 mx-auto" id="newMsgBtn" data-toggle="modal" data-target="#newEventModal"><i class="fas fa-plus" aria-hidden="true"></i> New message</button>
-            {% comment %}<br><button class="btn btn-primary btn-sm mt-3" id="inboxBtn"><i class="fas fa-inbox" aria-hidden="true"></i> Inbox</button>
-            <button class="btn btn-primary btn-sm mt-3" id="outboxBtn"><i class="fas fa-paper-plane" aria-hidden="true"></i> Outbox</button>{% endcomment %}
+            <button class="btn btn-success btn-sm mt-3 mx-auto" id="newMsgBtn" data-toggle="modal" data-target="#newMsgModal"><i class="fas fa-plus" aria-hidden="true"></i> New message</button>
+            <button class="btn btn-danger btn-sm mt-3 mx-auto" id="deleteMsgBtn" data-toggle="modal" data-target="#deleteMsgModal" style="display:none"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>
         </div>
 
-        <div class="col-lg-6 mx-auto">
-            <br><h5 class="bg-light text-dark p-1 rounded-top text-center" id="inboxBtn">Inbox</h5>
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+            <br><h5 class="bg-light text-dark p-1 rounded-top text-center" id="inboxBtn">
+                <i class="fas fa-download" aria-hidden="true"></i> Inbox
+            </h5>
             <div id="inboxDiv">
+                <div class="text-dark bg-light col-lg-12"><input class="mr-2" id="in-all-check" type="checkbox"><small> Select/deselect all</small></div>
                 {% for m in all_messages %}
-                    {% if m.recipient.username == user.username %}
+                    {% if m.recipient.username == user.username and m.shown_to_recipient %}
                         <div class="col-lg-12">
-                            <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
-                                {{ m.title }} <span class="text-muted"> from </span><span style="color:limegreen"> {{ m.sender.username }} </span>
-                                <span class="text-muted"> - {{ m.date }}</span></a>
-                            <div class="message m-1 ml-3 p-2 bg-light text-dark rounded" id="message{{ m.pk }}" style="display:none">
+                            <input class="mr-2 in-one-check" type="checkbox" name="in" id="{{ m.pk }}">
+                            <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}" name="inbox">
+                            {{ m.title }} <span class="text-muted"> from </span><span style="color:limegreen"> {{ m.sender.username }} </span>
+                            <span class="text-muted"> - {{ m.date }}</span></a>
+                            <div class="message inbox m-1 ml-3 p-2 bg-light text-dark rounded" id="messageinbox{{ m.pk }}" style="display:none">
                                 <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
                                 <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
                                 <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
-                                <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
+                                <br><br><p id="content{{ m.pk }}" style="white-space: pre-wrap;">{{ m.message }}</p>
                                 <hr>
-                                <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
+                                <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newMsgModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
                             </div>
                         </div>
                     {% endif %}
@@ -41,33 +45,39 @@
         </div>
 
         <div class="col-lg-6 mx-auto">
-            <br><br><h5 class="bg-light text-dark p-1 rounded-top text-center" id="outboxBtn">Outbox</h5>
+            <br><h5 class="bg-light text-dark p-1 rounded-top text-center" id="outboxBtn">
+                <i class="fas fa-upload" aria-hidden="true"></i> Outbox
+            </h5>
             <div id="outboxDiv">
+                <div class="text-dark bg-light col-lg-12"><input class="mr-2" id="out-all-check" type="checkbox"><small> Select/deselect all</small></div>
                 {% for m in all_messages %}
-                    {% if m.sender.username == user.username %}
+                    {% if m.sender.username == user.username and m.shown_to_sender %}
                         <div class="col-lg-12 outboxDiv">
-                            <a href="#" class="link {{ m.read }} {% if not m.read and request.user == m.recipient %} text-light {% endif %}" id="{{ m.pk }}">
+                            <input class="mr-2 out-one-check" type="checkbox" name="out" id="{{ m.pk }}">
+                            <a href="#" class="link {{ m.read }}" id="{{ m.pk }}" name="outbox">
                                 {{ m.title }} <span class="text-muted"> to </span><span style="color:limegreen"> {{ m.recipient.username }} </span>
                                 <span class="text-muted"> - {{ m.date }}</span></a>
-                            <div class="message m-1 ml-3 p-2 bg-white text-dark rounded" id="message{{ m.pk }}" style="display:none">
+                            <div class="message outbox m-1 ml-3 p-2 bg-white text-dark rounded" id="messageoutbox{{ m.pk }}" style="display:none">
                                 <span id="title{{ m.pk }}"><b>{{ m.title }}</b></span>
                                 <br><span><b>From:</b> <a href="/user/{{ m.sender.username }}" id="sender{{ m.pk }}">{{ m.sender }}</a></span>
                                 <br><span><b>To:</b> <a href="/user/{{ m.recipient.username }}" id="recipient{{ m.pk }}">{{ m.recipient }}</a></span>
-                                <br><br><p id="content{{ m.pk }}">{{ m.message }}</p>
+                                <br><br><p id="content{{ m.pk }}" style="white-space: pre-wrap;">{{ m.message }}</p>
                                 <hr>
-                                <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newEventModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
+                                <button class="btn btn-primary btn-sm" id="respondBtn" data-toggle="modal" data-target="#newMsgModal"><i class="fas fa-reply fa-lg" aria-hidden="true"></i> Respond</button>
                             </div>
                         </div>
                     {% endif %}
                 {% endfor %}
             </div>
         </div>
+        </div>
+
 
     </div>
 
 
-    <!-- Modal -->
-<div class="modal fade" id="newEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Send msg Modal -->
+<div class="modal fade" id="newMsgModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -110,8 +120,88 @@
   </div>
 </div>
 
+<!-- Delete msg modal -->
+<div class="modal fade" id="deleteMsgModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Delete messages</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete selected messages?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" id="confirmDeleteMsgBtn">Yes</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
     <script>
         $(function() {
+            loadCRF();
+
+            function lookForChecked() {
+                if($(".out-one-check").is(":checked") || $(".in-one-check").is(":checked")) {
+                    $("#deleteMsgBtn").show();
+                } else {
+                    $("#deleteMsgBtn").hide();
+                }
+            }
+            $(".out-one-check").change(function() {
+                lookForChecked();
+            });
+            $(".in-one-check").change(function() {
+                lookForChecked();
+            });
+
+            $("#in-all-check").change(function() {
+                if($("#in-all-check").prop("checked")) {
+                    $(".in-one-check").prop("checked", true);
+                } else {
+                    $(".in-one-check").prop("checked", false);
+                }
+                lookForChecked();
+            });
+
+            //Outbox checkbox logic
+            $("#out-all-check").change(function() {
+                if($("#out-all-check").prop("checked")) {
+                    $(".out-one-check").prop("checked", true);
+                } else {
+                    $(".out-one-check").prop("checked", false);
+                }
+                lookForChecked();
+            });
+
+            $("#confirmDeleteMsgBtn").click(function() {
+                var checkedInMsgs = $('.in-one-check:checkbox:checked');
+                var checkedOutMsgs = $('.out-one-check:checkbox:checked');
+                var inMsgsToDelete = [];
+                var outMsgsToDelete = [];
+                for(var i = 0; i < checkedInMsgs.length; i++) {
+                    inMsgsToDelete.push(checkedInMsgs[i].id)
+                }
+                for(var i = 0; i < checkedOutMsgs.length; i++) {
+                    outMsgsToDelete.push(checkedOutMsgs[i].id)
+                }
+
+                $.ajax({
+                    url : "{% url 'messages:messages' %}",
+                    type : "POST",
+                    data : { 'action': 'delete_msgs', 'in_msgs': inMsgsToDelete, 'out_msgs': outMsgsToDelete }
+                }).done(function(response) {
+                    window.location.reload();
+                });
+
+
+            });
+
             //Display inbox
             $("#inboxBtn").click(function() {
                 if($("#inboxDiv").is(':visible'))
@@ -133,8 +223,6 @@
                 }
             });
 
-            loadCRF();
-
             // Currently selected message
             var messagePk;
             var sender;
@@ -145,7 +233,8 @@
             // Clicking a message
             $(".link").click(function(e) {
                 e.preventDefault();
-                messagePk = $(this).attr('id');
+                var messagePk = $(this).attr('id');
+                var mailBox = $(this).attr('name');
 
                 sender = $("#sender" + messagePk).text();
                 recipient = $("#recipient" + messagePk).text();
@@ -157,15 +246,20 @@
                 $("#contentInput").val(content);
                 $(this).removeClass("text-light");
 
-                var selectedElement = $("#message" + messagePk);
+                var selectedElement = $("#message" + mailBox + messagePk);
 
                 var isVisible = selectedElement.is(':visible');
 
                 if(isVisible) {
                     selectedElement.hide(200);
                 } else {
-                    $(".message").hide();
-                    selectedElement.show(200);
+                    if(mailBox == 'inbox') {
+                        $(".message.inbox").hide();
+                        selectedElement.show(200);
+                    }
+                    else if(mailBox == 'outbox')
+                    $(".message.outbox").hide();
+                        selectedElement.show(200);
                 }
 
 

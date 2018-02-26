@@ -8,16 +8,16 @@
     {% load staticfiles %}
 
 
-    <link rel="stylesheet" href="../../../jquery-ui-1.12.1.custom/jquery-ui.min.css">
     <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-    <script src="http://code.jquery.com/ui/1.8.21/jquery-ui.min.js"></script>
-    <script src="../../../jquery.ui.touch-punch.min.js"></script>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <script src="{% static 'mypage/jquery-ui-1.12.1.custom/jquery-ui.js' %}"></script>
+  <script src="{% static 'mypage/jquery.ui.touch-punch.min.js' %}"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.0.1/js/all.js"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'mypage/style.css' %}">
+    <link rel="stylesheet" href="{% static 'mypage/jquery-ui-1.12.1.custom/jquery-ui.min.css' %} ">
 </head>
 <body>
 
@@ -26,6 +26,8 @@
     <script>
         // Polling server to check for new unread messages
         $(function() {
+            loadCRF();
+
             $("#unreadMail").hide();
             $("#unreadCount").hide();
             {% if unread.count > 0 %}
@@ -55,6 +57,7 @@
            checkBase()
         });
 
+        // CRF used in all ajax POSTS
         function loadCRF() {
             function getCookie(name) {
                 var cookieValue = null;
@@ -76,7 +79,6 @@
                 // these HTTP methods do not require CSRF protection
                 return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
             }
-
             $.ajaxSetup({
                 beforeSend: function(xhr, settings) {
                     if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -85,6 +87,20 @@
                 }
             });
         }
+
+        // TODO: Asyncront... inget hinner returneras
+        {% comment %}function getSearchedMovie(title) {
+            console.log("Inside getSearched");
+            $.ajax({
+                url : '{% url "mypage:get_movie" %}',
+                type : 'POST',
+                data : {'title' : title}
+            }).done(function(response) {
+                console.log("response:");
+                console.log(response);
+                return response;
+            });
+        }{% endcomment %}
     </script>
 
 {% block body %}
