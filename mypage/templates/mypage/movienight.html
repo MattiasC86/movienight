@@ -35,7 +35,7 @@
                     {% endfor %}
                 {% endif %}
                 {% if invited_movinights %}
-                    <p style="color:deepskyblue">NOT YET ACCEPTED INVITATIONS:</p>
+                    <p style="color:deepskyblue">INVITATIONS:</p>
                     {% for i_movienight in invited_movinights %}
                         <p class="text-muted mt-1 mb-1 ml-3">{{ i_movienight.creation_date }} -> <a href="/movienightevent/{{ i_movienight.pk }}" style="color:deepskyblue"> {{ i_movienight.title }}</a>
                         created by <a href="/user/{{ i_movienight.creator.username }}" style="color:limegreen">{{ i_movienight.creator.username }}</a></p>

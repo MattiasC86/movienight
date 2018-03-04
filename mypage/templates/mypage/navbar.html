@@ -1,3 +1,5 @@
+
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="{% url 'mypage:index' %}" style="color:orange;">M<span style="color:deepskyblue">N</span></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,13 +46,13 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
 
-                            <a class="dropdown-item" href="{% url 'messages:messages' %}">
+                            <a class="dropdown-item" href="{% url 'interaction:messages' %}">
                             <span class="fa-layers fa-fw">
                                 <i class="fas fa-envelope"></i>
                                 <span class="fa-layers-counter fa-2x" id="unreadCount" style="display:none;background:Tomato"></span>
                             </span> Messages</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Friends list</a>
+                            <a class="dropdown-item" href="{% url 'interaction:friends_list' %}"><i class="fas fa-heart"></i> Friends list</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{% url 'mypage:settings' %}"><i class="fas fa-cog" aria-hidden="true"></i> Settings</a>
                             <div class="dropdown-divider"></div>
@@ -71,5 +73,3 @@
         </div>
     </nav>
     <div style="background:deepskyblue;height:1px;"></div>
-
-

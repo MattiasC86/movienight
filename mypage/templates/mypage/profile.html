@@ -7,14 +7,13 @@
         <div class="col-lg-12 mt-3">
             <h1 style="color:limegreen">{{ user.get_username }}</h1>
             <p class="text-muted">MovieNight member since {{ user.date_joined }}</p>
-            <span class="text-white"><span style="color:deepskyblue">ACTIVE MOVIENIGHT EVENTS:</span> {{ movienights.count }}</span>
+            <span class="text-white"><span style="color:deepskyblue">ACTIVE MOVIENIGHT EVENTS:</span> {{ active_movienights.count }}</span>
             <span class="text-muted ml-2 mr-2">-</span>
             <span class="text-white"><span style="color:deeppink">MOVIES IN BACKLOG:</span> {{ backlog.count }}</span>
             <span class="text-muted ml-2 mr-2">-</span>
             <span class="text-white"><span style="color:orange">LISTS CREATED:</span> 0</span>
             <hr class="bg-secondary">
         </div>
-
 
         <div class="col-lg-12">
             <button class="btn btn-light btn-sm" id="newPostBtn">+New post</button>
@@ -33,73 +32,45 @@
 
             <div class="col-lg-5">
                 <h5 class="lead text-dark bg-light p-1 pl-3"><strong>Posts</strong></h5>
-                {% comment %}<div id="blogPosts">
-                    <div class="mt-3 p-2 border border-secondary rounded" id="blogPost" style="display:none;background:#323232">
-                        <div class="col-lg-l2">
-                            <h5 class="text-light mb-0"><span id="postTitle">Some Title</span> <span><small class="text-dark rounded p-1" style="background:deepskyblue"><strong> <i class="fas fa-film fa-lg"></i> Review </strong></small></span></h5>
-                            <p class="text-muted mt-0 mb-1">Posted by <span style="color:limegreen">admin</span> 2018-02-23 08:12</p>
-                            <hr class="bg-secondary">
-                        </div>
-                        <div class="col-lg-l2">
-                            <div class="text-light">
-                                <p id="postContent" style="white-space: pre-wrap;"></p>
-                            </div>
-                        </div>
-                        <div>
-                            <a href="#">Comments</a>
-                        </div>
-                    </div>
-                </div>{% endcomment %}
                 <div id="blogPosts">
-                    <div class="mt-3 p-2 bg-light border border-secondary rounded" id="blogPost" style="display:none">
-                        <div class="col-lg-l2">
-                            <h5 class="mb-0 text-dark"><span id="postTitle">Some Title</span></h5>
-                            <p class="text-muted mt-0 mb-1">Posted by <span style="color:limegreen">admin</span> 2018-02-24 08:12</p>
-                            <hr>
-                        </div>
-                        <div class="col-lg-l2">
-                            <p id="postContent" style="white-space: pre-wrap;"></p>
-                            <hr>
-                        </div>
-                        <div>
-                            <a href="#">Comments</a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
-
-
         </div>
+    </div>
 
-
+    <!-- Delete blog post modal -->
+    <div class="modal fade" id="deleteBlogPostModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Delete blog post</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete selected blog post?</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success deletePostBtn" id="" data-dismiss="modal">Yes</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
         $(function() {
-            console.log("1");
+            var postToDelete;
+
             {% if blog_posts.count > 0 %}
-                console.log("2");
-                var blogPostDiv =   '<div class="mt-3" id="blogPost" style="display:none">' +
-                                    '<div class="col-lg-l2">' +
-                                    '<h5 class="text-light mb-0"><span id="postTitle">Some Title</span> <span><small class="text-dark rounded p-1" style="background:deepskyblue"><strong> <i class="fas fa-film fa-lg"></i> Review </strong></small></span></h5>' +
-                                    '<p class="text-muted mt-0 mb-1">Posted by <span style="color:limegreen">admin</span> 2018-02-23 08:12</p>' +
-                                    '</div>' +
-                                    '<div class="col-lg-l2">' +
-                                    '<div class="text-light">' +
-                                    '<p id="postContent" style="white-space: pre-wrap;"></p>' +
-                                    '</div>' +
-                                    '</div>' +
-                                    '<div>' +
-                                    '<a href="#">Comments</a>' +
-                                    '</div>' +
-                                    '</div>';
                 {% for b in blog_posts.all %}
-                    console.log('{{ b.title }}');
                     $("#blogPosts").append(
-                        '<div class="mt-3 p-2 rounded" id="blogPost" style="background:#323239;">' +
+                        '<div class="mt-3 p-2 rounded" id="{{ b.pk }}" style="background:#323239;">' +
                             '<div class="col-lg-l2">' +
                                 '<h5 class="text-light mb-0"><span id="postTitle"> {{ b.title }} </span></h5>' +
-                                '<p class="text-muted mt-0 mb-1"><small>Posted by <span style="color:limegreen"> {{ b.user }} </span> {{ b.date }}</small></p>' +
+                                '<p class="text-muted mt-0 mb-1"><small>Posted by <span style="color:limegreen"> {{ b.user }} </span> {{ b.date|date:"Y-m-d H:i" }}</small></p>' +
                                 '<hr class="bg-secondary">' +
                             '</div>' +
                             '<div class="col-lg-l2">' +
@@ -108,15 +79,51 @@
                                 '</div>' +
                                 '<hr class="bg-secondary">' +
                             '</div>' +
-                            '<div>' +
-                                '<a href="#">Comments (5)</a>' +
+                            '<div class="row">' +
+                                '<div class="col-sm-9 col-lg-9">' +
+                                    '<a href="#" style="text-decoration: none">Comments</a>' +
+                                '</div>' +
+                                '<div class="col-sm-3 col-lg-3">' +
+                                    '<button class="btn btn-danger btn-sm deletePostPrepareBtn" id="" name="{{ b.pk }}" data-toggle="modal" data-target="#deleteBlogPostModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>' +
+                                '</div>' +
                             '</div>' +
                         '</div>'
                     );
                 {% endfor %}
             {% endif %}
 
+            // This is so that .deletePostPrepareBtn works on dynamically added buttons where .click doesnt work
+            $('body').on('click', '.deletePostPrepareBtn', function () {
+                postToDelete = $(this).attr("name");
+                console.log("postToDelete is now " + postToDelete);
+            });
 
+            function addBlogPost(post) {
+                $("#blogPosts").prepend(
+                        '<div class="mt-3 p-2 rounded" id="' + post.pk + '" style="background:#323239;display:none;">' +
+                            '<div class="col-lg-l2">' +
+                                '<h5 class="text-light mb-0"><span id="postTitle">' + post.title + '</span></h5>' +
+                                '<p class="text-muted mt-0 mb-1"><small>Posted by <span style="color:limegreen">' + post.user + '</span> ' + post.date + '</small></p>' +
+                                '<hr class="bg-secondary">' +
+                            '</div>' +
+                            '<div class="col-lg-l2">' +
+                                '<div class="text-light">' +
+                                    '<p id="postContent" style="white-space: pre-wrap;">' + post.content + '</p>' +
+                                '</div>' +
+                                '<hr class="bg-secondary">' +
+                            '</div>' +
+                            '<div class="row">' +
+                                '<div class="col-sm-9 col-lg-9">' +
+                                    '<a href="#" style="text-decoration: none">Comments</a>' +
+                                '</div>' +
+                                '<div class="col-sm-3 col-lg-3">' +
+                                    '<button class="btn btn-danger btn-sm deletePostPrepareBtn" name="' + post.pk + '" data-toggle="modal" data-target="#deleteBlogPostModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>'
+                    );
+                    $("#" + post.pk).fadeIn(1000);
+            }
 
             $("#newPostBtn").click(function() {
                 if(!$("#newPostDiv").is(':visible')) {
@@ -134,14 +141,24 @@
                     data : { 'action': 'post_blog', 'title': title, 'content': content }
 
                 }).done(function(response) {
-
+                    closeNewMessageDiv();
+                    addBlogPost(response);
                 });
 
-                $("#postTitle").text($("#inputTitle").val());
-                $("#postContent").text($("#inputContent").val());
-                closeNewMessageDiv();
-                $("#blogPost").fadeIn(1000);
+            });
 
+            $(".deletePostBtn").click(function() {
+                console.log("CLICKED");
+                console.log("Delete post: " + postToDelete);
+                console.log(postToDelete);
+               $.ajax({
+                   url : '{% url "mypage:profile" %}',
+                   type : 'POST',
+                   data : { 'action': 'delete_blog', 'blog_post_pk': postToDelete }
+               }).done(function(response) {
+                    console.log(response);
+                    $("#" + postToDelete).hide(400);
+               });
             });
 
             $("#cancelPostBtn").click(function() {

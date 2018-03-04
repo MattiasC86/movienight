@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, UserManager, AbstractUser
 from django.utils import timezone
 
 
@@ -13,12 +13,14 @@ from django.utils import timezone
 from django.db.models.functions import datetime
 
 
-class Friends(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='first_user')
-    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='second_user')
+#class CustomUserManager(UserManager):
+#    def get_by_natural_key(self, username):
+#        case_insensitive_username_field = '{}__iexact'.format(self.model.USERNAME_FIELD)
+#        return self.get(**{case_insensitive_username_field: username})
 
-    def __str__(self):
-        return self.user.username + ' - ' + self.user2.username
+
+#class CustomUser(AbstractUser):
+#    objects = CustomUserManager()
 
 
 class Movie(models.Model):
@@ -56,13 +58,13 @@ class MovieNight(models.Model):
     # Users
     creator = models.ForeignKey(User)
     users = models.ManyToManyField(User, related_name="participants")
-    invited_users = models.ManyToManyField(User, related_name="invited_users", blank=True, null=True)
-    declined_users = models.ManyToManyField(User, related_name="declined_users", blank=True, null=True)
+    invited_users = models.ManyToManyField(User, related_name="invited_users", blank=True)
+    declined_users = models.ManyToManyField(User, related_name="declined_users", blank=True)
+    result_viewed_users = models.ManyToManyField(User, related_name="result_viewed_users", blank=True)
     # State of event
     editable = models.BooleanField(default=True)
     active = models.BooleanField(default=True)
     result_viewable = models.BooleanField(default=False)
-    result_viewed_users = models.ManyToManyField(User, related_name="result_viewed_users", blank=True, null=True)
     # Phase
     current_phase = models.IntegerField(default=1)
 
@@ -98,7 +100,7 @@ class BlogPostComment(models.Model):
 
 class MovieNightList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    users_voted = models.ManyToManyField(User, related_name="users_voted", blank=True, null=True)
+    users_voted = models.ManyToManyField(User, related_name="users_voted", blank=True)
     movienight = models.ForeignKey(MovieNight, on_delete=models.CASCADE)
     movies = models.ManyToManyField(Movie)
     editable = models.BooleanField(default=True)

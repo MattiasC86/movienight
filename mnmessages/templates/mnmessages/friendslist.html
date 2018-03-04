@@ -5,34 +5,165 @@
 
     <div class="container">
         <div class="col-lg-12 mt-4">
-            <h1 class="text-center" style="color:red">Friends list</h1>
+            <h1 class="text-center text-light">Friends list</h1>
             <hr class="bg-secondary">
         </div>
     </div>
 
     <div class="container mx-auto">
 
-        <div class="row mx-auto">
-            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 mx-auto">
+        <div class="row">
+            <div class="col-lg-3">
                 <div class="searchDiv">
                     <br>
-                    <h5 class="text-black" style="background:limegreen">SEARCH USER</h5>
-                    <form class="form" method="POST" action=".">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="User name..." id="titleinput" name="titleinput" value="{{ titleinput }}">
-                            <span class="input-group-btn">
-                                <button class="btn btn-secondary" type="submit" id="searchBtn" name="singleResultBtn" value="1">Go!</button>
-                            </span>
-                        </div>
-                        {% if movie %}
-                        <button class="btn btn-dark" type="submit" name="multipleResultsBtn" value="1">Show more results...</button>
-                        {% endif %}
-                    </form>
-                    <br>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search for user" id="inputUsername">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="button" id="searchUserBtn" name="singleResultBtn" value="1">Go!</button>
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 border border-success rounded" id="friendsListDiv">
+                    <h5 class="text-light">Friends</h5>
+                    <p class="text-muted" id="infoNoFriends" {% if friends.count > 0 %} style="display:none" {% endif %}>You haven't added any friends yet.</p>
+                    <table style="width:100%" id="table">
+
+                    </table>
                 </div>
             </div>
+
+
+            <div class="col-lg-4 mt-3 mx-auto">
+
+                <div class="mt-2" id="alertUserFound" style="display:none">
+                    <p class="text-light">Found user <strong><span id="userFound" style="color:limegreen"> </span></strong></p> <button class="btn btn-success btn-sm" id="addFriendBtn">+ Add friend</button>
+                </div>
+                <div class="alert alert-warning mt-2" id="alertNoUserFound" style="display:none">
+                    <strong>No such user found.</strong>
+                </div>
+                <div class="alert alert-warning mt-2" id="alertUserAlreadyFriend" style="display:none">
+                    <strong>User is already on your friends list.</strong>
+                </div>
+            </div>
+            <div class="col-lg-4">
+
+            </div>
+
+
         </div>
     </div>
+
+    <!-- Delete friend modal -->
+    <div class="modal fade" id="deleteFriendModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Remove friend</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to remove <strong><span id="deleteFriendModalUsername" style="color:limegreen"></span></strong> from your friends list?</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success" id="confirmDeleteFriendBtn" data-dismiss="modal">Yes</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        $(function() {
+            var userToAdd;
+            var userToDelete;
+
+            {% if friends.count > 0 %}
+                {% for f in friends.all %}
+                    var friend = { 'pk': '{{ f.friend.pk }}', 'username': '{{ f.friend.username }}' };
+                    appendUser(friend);
+                {% endfor %}
+            {% endif %}
+
+            $("#searchUserBtn").click(function() {
+                $("#alertNoUserFound").hide();
+                $("#alertUserFound").hide();
+                $("#addFriendBtn").show();
+                var username = $("#inputUsername").val();
+                var found_user;
+
+                $.ajax({
+                   url : '.',
+                   type : 'POST',
+                   data : {'action': 'return_user', 'username' : username}
+                }).done(function(response) {
+                    console.log(response);
+                    if(response.error) {
+                        if(response.error == 'noUserFound') {
+                            console.log("No user found!");
+                            $("#alertNoUserFound").fadeIn(100).fadeOut(5000);
+                        }
+                    } else {
+                        found_user = response;
+                        if(found_user.pk == {{ request.user.pk }}) {
+                            $("#addFriendBtn").hide();
+                            $("#userFound").text('You found yourself.');
+                        } else {
+                            $("#userFound").text(found_user.username);
+                            userToAdd = found_user;
+                        }
+                        $("#alertUserFound").fadeIn(500);
+                    }
+                });
+            });
+
+            $("#addFriendBtn").click(function() {
+               $.ajax({
+                   url : "{% url 'interaction:friends_list' %}",
+                   type : 'POST',
+                   data : {'action': 'add_friend', 'user_pk': userToAdd.pk}
+               }).done(function(response) {
+                   $("#alertUserFound").fadeOut(1000);
+                   if(response.error) {
+                       $("#alertUserAlreadyFriend").fadeIn(100).fadeOut(5000);
+                   } else {
+                       appendUser(response);
+                       $("#inputUsername").val('');
+                       $("#infoNoFriends").hide();
+                   }
+               })
+            });
+
+            function appendUser(user) {
+                $("#table").append(
+                    '<tr id="' + user.username + '">' +
+                        '<td><a href="/user/' + user.username + '" style="color:limegreen">' + user.username + '</a></td>' +
+                        '<td><i class="fas fa-minus-circle text-danger ml-1 deleteFriendBtn" name="' + user.username + '" aria-hidden="true" data-toggle="modal" data-target="#deleteFriendModal" style="cursor:pointer"></i></td>' +
+                    '</tr>'
+                );
+            }
+
+            $('body').on('click', '.deleteFriendBtn', function () {
+                userToDelete = $(this).attr("name");
+                $("#deleteFriendModalUsername").text(userToDelete);
+                console.log("Clicked to delete " + userToDelete);
+            });
+
+            $("#confirmDeleteFriendBtn").click(function() {
+                $.ajax({
+                    url : '{% url "interaction:friends_list" %}',
+                    type : 'POST',
+                    data : { 'action': 'delete_friend', 'username': userToDelete }
+                }).done(function(response) {
+                    $("tr#" + userToDelete).remove();
+                    if(response == 'zeroFriends') {
+                        $("#infoNoFriends").show();
+                    }
+                })
+            });
+        })
+
+    </script>
 
 {% endblock %}

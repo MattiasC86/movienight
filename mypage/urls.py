@@ -42,10 +42,6 @@ urlpatterns = [
     # /mycouch/movienight
     url(r'^mycouch/movienight/', views.movienight, name='movienight'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/$', views.movienight_event, name='movienight_event'),
-    # save chat msg
-    url(r'^movienightevent/(?P<pk>[0-9]+)/savechatmsg/$', views.movienight_event, name='movienight_event_save_chat_msg'),
-    url(r'^movienightevent/(?P<pk>[0-9]+)/settings/$', views.movienight_event, name='movienight_event_settings'),
-    url(r'^movienightevent/(?P<pk>[0-9]+)/inviteuser/$', views.movienight_event, name='movienight_event_invite_user'),
     url(r'^movienightevent/(?P<pk>[0-9]+)/get_vote_results/$', views.movienight_event_get_vote_results, name='movienight_event_get_vote_results'),
     # delete movienight
     url(r'^movienightevent/(?P<pk>[0-9]+)/delete$', views.delete_movienight, name='delete_movienight'),
@@ -55,7 +51,6 @@ urlpatterns = [
     url(r'^get_movie/$', views.get_movie, name='get_movie'),
     # vote page
     url(r'^movienightevent/(?P<pk>[0-9]+)/vote/(?P<username>[-\w]+)/$', views.movienight_list_vote, name='movienight_list_vote'),
-    url(r'^movienightevent/(?P<pk>[0-9]+)/vote/(?P<username>[-\w]+)/savevote/$', views.movienight_list_vote, name='movienight_list_vote'),
 
 
     url(r'^movienightevent/(?P<pk>[0-9]+)/(?P<username>\w+)/add/$', views.movienight_list_add, name='add_list'),

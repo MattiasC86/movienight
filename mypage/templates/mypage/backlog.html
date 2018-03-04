@@ -29,11 +29,11 @@
                     <div class="mt-3">
                         <h5 style="background:deeppink">BACKLOG</h5>
                         {% if m_backlog %}
+                            <div id="backlogDiv">
                         {% for m in m_backlog %}
-                            <div>
-                            <a href="{% url 'mypage:detail' m.movie.pk %}" class="text-white">{{ m.movie.title }}</a>
-                            </div>
+                            <p class="mb-0"><a href="{% url 'mypage:detail' m.movie.pk %}" class="text-white">{{ m.movie.title }}</a></p>
                         {% endfor %}
+                            </div>
                             {% else %}
                             <p class="lead text-muted">You haven't added any movies to your Backlog yet! Get started by searching for a movie title and adding it to your Backlog.</p>
                         {% endif %}
@@ -43,6 +43,15 @@
                 </div>
 
                 <!-- Movie search result -->
+                <div class="text-light mx-auto mt-5" id="loadingIcon" style="display:none">
+                    <i class="fas fa-sync fa-spin fa-4x mt-5"></i>
+                </div>
+                <div class="mx-auto" id="alertMovieNotFound" style="display:none">
+                    <div class="alert alert-warning mt-5" role="alert">
+                        No movie found with that title.
+                    </div>
+                </div>
+
                 <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="movieSearchResult" style="display:none">
                     <div class="row">
                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
@@ -78,13 +87,7 @@ $(function() {
     $(".delBacklogBtn").click(function() {
         var backlogToDelete =  $(this).attr('name');
         console.log('clicked to remove backlog with movie.pk ' + backlogToDelete);
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
+
         $.ajax({
             url : 'delete/',
             type : "POST",
@@ -98,33 +101,24 @@ $(function() {
     // Add singlechoice to backlog
     $(".addMovieBtn").click(function() {
         console.log('clicked to save backlog');
-
-        var titleToAdd = $("#resultTitle").text();
-        var yearToAdd = $("#resultYear").text();
-        var posterToAdd = $("#resultPoster").attr("src");
-        var directorToAdd = $("#resultDirector").text();
-        var plotToAdd = $("#resultPlot").text();
-
-        $.ajax({
-            url : 'add/',
-            type : "POST",
-            data : { title: titleToAdd, director: directorToAdd, year: yearToAdd, poster : posterToAdd, plot: plotToAdd }
-        }).done(function(returned_data){
-            window.location.href = '{% url 'mypage:backlog' %}';
-        });
+        var movie = {
+            'title': $("#resultTitle").text(),
+            'year': $("#resultYear").text(),
+            'director': $("#resultDirector").text(),
+            'poster': $("#resultPoster").attr("src"),
+            'plot': $("#resultPlot").text()
+        };
+        addMovieToBacklog(movie);
     });
+    function saveToBacklogDone(response) {
+        console.log("Save done! :)");
+    }
     // Add multiplechoice to backlog
     $(".addBacklogMultiChoiceBtn").click(function() {
         var title = $(this).attr('id');
 
         console.log('clicked to save multichoice backlog');
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
+
         $.ajax({
             url : 'addmultichoice/',
             type : "POST",
@@ -142,6 +136,7 @@ $(function() {
     });
     $("#searchMovieBtn").click(function() {
         $("#moviesSearchResult").hide();
+        $("#loadingIcon").show();
         console.log('searchMovieBtn');
         $("#movieInfo").hide();
         var titleInput = $("#titleinput").val();
@@ -149,15 +144,25 @@ $(function() {
             url : '{% url "mypage:get_movie" %}',
             type : "POST",
             data : { title: titleInput }
-        }).done(function(returned_data){
-            console.log(returned_data);
-            $("#resultTitle").text(returned_data.Title);
-            $("#resultDirector").text(returned_data.Director);
-            $("#resultPoster").attr("src", returned_data.Poster);
-            $("#resultYear").text(returned_data.Year);
-            $("#resultPlot").text(returned_data.Plot);
+        }).done(function(response){
+            console.log(response);
+            if(response.Error) {
+                console.log("Movie not found");
+                $("#movieSearchResult").hide();
+                $("#loadingIcon").hide();
+                $("#alertMovieNotFound").fadeIn(200).fadeOut(4000);
+                $("#multipleResultsBtn").show();
+            } else {
+                $("#resultTitle").text(response.Title);
+            $("#resultDirector").text(response.Director);
+            $("#resultPoster").attr("src", response.Poster);
+            $("#resultYear").text(response.Year);
+            $("#resultPlot").text(response.Plot);
+            $("#loadingIcon").hide();
             $("#movieSearchResult").show();
             $("#multipleResultsBtn").show();
+            }
+
         });
     });
 
@@ -185,21 +190,6 @@ $(function() {
                     );
                 }
                 $("#moviesSearchResult").show();
-
-                {% comment %}{% if movies %}
-                    <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 ml-auto">
-                        <div class="row">
-                    {% for movie in movies %}
-                            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 mt-3">
-                                <h6 style="color:deepskyblue">{{ movie.Title }} <span class="text-muted">({{ movie.Year }})</span></h6>
-                                <img class="img-fluid" src="{{ movie.Poster }}" alt="">
-                            <button class="btn btn-success addBacklogMultiChoiceBtn" id="{{ movie.Title }}">+ Add to backlog</button>
-                            </div>
-                    {% endfor %}
-                        </div>
-                    </div>
-
-                {% endif %}{% endcomment %}
 
             });
         });

@@ -12,8 +12,8 @@
 
     <div class="container">
         <div class="col-lg-6 mx-auto text-center">
-            <button class="btn btn-success btn-sm mt-3 mx-auto" id="newMsgBtn" data-toggle="modal" data-target="#newMsgModal"><i class="fas fa-plus" aria-hidden="true"></i> New message</button>
-            <button class="btn btn-danger btn-sm mt-3 mx-auto" id="deleteMsgBtn" data-toggle="modal" data-target="#deleteMsgModal" style="display:none"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>
+            <button class="btn btn-success btn-sm mt-2 mx-auto" id="newMsgBtn" data-toggle="modal" data-target="#newMsgModal"><i class="fas fa-plus" aria-hidden="true"></i> New message</button>
+            <button class="btn btn-danger btn-sm mt-2 mx-auto" id="deleteMsgBtn" data-toggle="modal" data-target="#deleteMsgModal" style="display:none"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>
         </div>
 
         <div class="row">
@@ -87,34 +87,36 @@
         </button>
       </div>
       <div class="modal-body">
-        <form class="form-horizontal" role="form" action="{% url 'messages:send_message' %}" method="post">
-                {% csrf_token %}
-                <div class="form-group">
-                    <div class="col-sm-12">
-                        <label class="control-label col-sm-12 text-muted">Send to user: <button> + </button></label>
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label class="control-label col-sm-12 text-muted">Send to user:</label>
+                    <div class="col-sm-10 row">
                         <div class="col-sm-10">
                             <input class="form-control" type="text" id="recipientInput" name="recipient" placeholder="User name...">
                         </div>
-                        <br><label class="control-label col-sm-12 text-muted">Subject:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="text" name="subject" id="subjectInput" placeholder="Subject...">
-                        </div>
-                        <br><label class="control-label col-sm-12 text-muted">Message:</label>
-                        <div class="col-sm-10">
-                            <textarea cols="35" rows="7" name="content" id="contentInput" placeholder="Message content..." style="resize:none;overflow-x: hidden;"></textarea>
-                        </div>
-                        <br>
-                        <div class="col-sm-10">
-                            <button type="submit" class="btn btn-primary">Send message!</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <div class="col-sm-2">
+                            <select name="" id="selectFriendsList">
+                                <option value="0" disabled selected hidden>Friends list</option>
+                            </select>
                         </div>
                     </div>
+                    <div class="col-sm-10 alert alert-danger ml-3 mt-2 mb-0" id="alertUserDoesntExist" style="display:none">
+                            <strong>Error!</strong> User doesn't exist.
+                    </div>
+                    <br><label class="control-label col-sm-12 text-muted">Subject:</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" name="subject" id="subjectInput" placeholder="Subject...">
+                    </div>
+                    <br><label class="control-label col-sm-12 text-muted">Message:</label>
+                    <div class="col-sm-10">
+                        <textarea cols="35" rows="7" name="content" id="contentInput" placeholder="Message content..." style="resize:none;overflow-x: hidden;"></textarea>
+                    </div>
                 </div>
-
-            </form>
+            </div>
       </div>
       <div class="modal-footer">
-
+        <button type="button" class="btn btn-primary" id="sendMessageBtn">Send message</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -144,7 +146,18 @@
 
     <script>
         $(function() {
-            loadCRF();
+            {% if friends.count > 0 %}
+                {% for f in friends.all %}
+                    $("#selectFriendsList").append(
+                      '<option>' + "{{ f.friend.username }}" + '</option>'
+                    );
+                {% endfor %}
+            {% endif %}
+
+            $("#selectFriendsList").change(function() {
+                var selected_friend = $("#selectFriendsList option:selected").text();
+                $("#recipientInput").val(selected_friend);
+            });
 
             function lookForChecked() {
                 if($(".out-one-check").is(":checked") || $(".in-one-check").is(":checked")) {
@@ -167,6 +180,25 @@
                     $(".in-one-check").prop("checked", false);
                 }
                 lookForChecked();
+            });
+
+            //Send the message
+            $("#sendMessageBtn").click(function() {
+                var recipient = $("#recipientInput").val();
+                var subject = $("#subjectInput").val();
+                var content = $("#contentInput").val();
+
+               $.ajax({
+                   url : "{% url 'interaction:send_message' %}",
+                   type : 'POST',
+                   data : {'recipient': recipient, 'subject': subject, 'content': content}
+               }).done(function(response) {
+                    if(response.error) {
+                        $("#alertUserDoesntExist").fadeIn(100).fadeOut(5000);
+                    } else {
+                        window.location.reload();
+                    }
+               })
             });
 
             //Outbox checkbox logic
@@ -192,7 +224,7 @@
                 }
 
                 $.ajax({
-                    url : "{% url 'messages:messages' %}",
+                    url : "{% url 'interaction:messages' %}",
                     type : "POST",
                     data : { 'action': 'delete_msgs', 'in_msgs': inMsgsToDelete, 'out_msgs': outMsgsToDelete }
                 }).done(function(response) {
@@ -273,7 +305,7 @@
                     $(this).addClass("True");
 
                     $.ajax({
-                        url : "{% url 'messages:read_message' %}",
+                        url : "{% url 'interaction:read_message' %}",
                         type : "POST",
                         data : { messageToUpdate: messagePk}
                     }).done(function(returned_data){
@@ -289,6 +321,7 @@
                 $("#recipientInput").val('');
                 $("#subjectInput").val('');
                 $("#contentInput").val('');
+                $('#selectFriendsList').val("0");
             });
         });
     </script>

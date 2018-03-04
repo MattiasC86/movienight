@@ -13,12 +13,7 @@
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineInvModal"><i class="fas fa-times" aria-hidden="true"></i> Decline invitation</button>
                 {% endif %}
 
-                {% if request.user == movienight.creator %}
-                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#eventSettingsModal"><i class="fas fa-cog" aria-hidden="true"></i> Settings</button>
-                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#inviteUserModal"><i class="fas fa-user-plus" aria-hidden="true"></i> Invite</button>
-                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteEventModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>
-                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#nextPhaseModal"><i class="fas fa-lock-open" aria-hidden="true"></i> Next phase</button>
-                {% endif %}
+
             <hr class="bg-secondary">
         </div>
     </div>
@@ -40,16 +35,16 @@
 
                 <div class="mt-4">
                     <div>
-                        <h5 class="p-2 pl-3 rounded-top" style="background:limegreen"><i class="fas fa-users" aria-hidden="true"></i> Participants</h5>
+                        <h5 class="p-2 pl-3 rounded-top" style="background:limegreen"><i class="fas fa-users" aria-hidden="true"></i> Users</h5>
                     </div>
                     <div class="row">
                         <div class="col-lg-6 mt-2">
                             <div>
-                                <p class="mb-0" style="color:limegreen"><i class="fas fa-check"></i> ACCEPTED:</p>
+                                <p class="mb-0" style="color:limegreen"><i class="fas fa-thumbs-up"></i> PARTICIPANTS:</p>
                             </div>
                             {% for u in movienight.users.all %}
                                 <div>
-                                    <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue">(Creator)</span> {% endif %}
+                                    <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue"><small>Creator</small></span> {% endif %}
                                 </div>
                             {% endfor %}
                         </div>
@@ -60,17 +55,17 @@
                                 </div>
                                 {% for u in movienight.invited_users.all %}
                                     <div>
-                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue">(Creator)</span> {% endif %}
+                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue"><small>Creator</small></span> {% endif %}
                                     </div>
                                 {% endfor %}
                             {% endif %}
                             {% if movienight.declined_users.all %}
                                 <div class="mt-2">
-                                    <p class="mb-0" style="color:red"><i class="fas fa-times"></i> DECLINED:</p>
+                                    <p class="mb-0" style="color:red"><i class="fas fa-thumbs-down"></i> DECLINED:</p>
                                 </div>
                                 {% for u in movienight.declined_users.all %}
                                     <div>
-                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue">(Creator)</span> {% endif %}
+                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue"><small>Creator</small></span> {% endif %}
                                     </div>
                                 {% endfor %}
                             {% endif %}
@@ -108,23 +103,32 @@
 
             <!-- RIGHT SIDE -->
             <div class="col-sm-4 col-md-4 col-lg-3">
+                {% if request.user == movienight.creator %}
+                    <div class="col-sm-12 col-md-8 col-lg-12 mb-3 text-center mx-auto border border-secondary rounded pt-3 pb-3">
+                        <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#eventSettingsModal"><i class="fas fa-cog" aria-hidden="true"></i></button>
+                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#inviteUserModal"><i class="fas fa-user-plus" aria-hidden="true"></i></button>
+                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteEventModal"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                        <button class="btn btn-light btn-sm" data-toggle="modal" data-target="#nextPhaseModal"><i class="fas fa-lock-open" aria-hidden="true"></i></button>
+                        <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#infoModal"><i class="fas fa-question-circle" aria-hidden="true"></i> Info</button>
+                    </div>
+                {% endif %}
 
                 <h5 class="p-2 pl-3 rounded-top" id="nominateHeader" style="background:grey">1. <i class="fas fa-list" aria-hidden="true"></i> Nominate</h5>
                 <div class="mb-2" id="nominateDiv" style="display:none">
+                    <p class="text-muted ml-2">Let's begin! Make a list of movies that you would like to nominate for this event.</p>
                     {% if request.user in movienight.users.all %}
                         <a href="{{ request.user.username }}/" type="button" class="ml-2 btn btn-warning btn-sm">Edit my nominations</a>
+                        <p class="text-light ml-4"><input type="checkbox" id="inputNominationDone"
                     {% endif %}
-                    <p class="text-light ml-4"><input type="checkbox" id="inputNominationDone"
-                        {% for l in movie_lists.all %}
-                            {% if l.user.username == request.user.username %}
-                                {% if l.marked_done %}
-                                    checked
-                                {% endif %}
+                    {% for l in movie_lists.all %}
+                        {% if l.user.username == request.user.username %}
+                            {% if l.marked_done %}
+                                checked
                             {% endif %}
-                        {% endfor %}
+                        {% endif %}
+                    {% endfor %}
 
-
-                    > My list is complete</p>
+                    <p> My list is complete</p>
                     <p class="text-muted ml-2 mt-1 mb-0"><small>Done with nominations list:</small></p>
                     <p class="ml-2" id="usersNominationsDone" style="color:limegreen">
                         {% for l in movie_lists %}
@@ -137,22 +141,24 @@
 
                 <h5 class="p-2 pl-3 rounded-top" id="voteHeader" style="background:grey">2. <i class="fas fa-sort-numeric-down" aria-hidden="true"></i> Vote</h5>
                 <div class="mb-2" id="voteDiv" style="display:none">
+                    <p class="text-muted ml-2">Time to vote! Click on a list below to bring up the movies it contains and to cast your vote. And yes, you are supposed to vote on your own list too.</p>
                 {% for u in movienight.users.all %}
                     <div class="ml-2">
-                        <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a>
+                        <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a><p class="ml-2" style="color:limegreen"><small><span class="text-muted">Voted:</span>
                         {% for l in movie_lists %}
                             {% if u.username == l.user.username %}
                                 {% if l.users_voted.all %}
-                                    <p class="ml-2" style="color:limegreen"><small><span class="text-muted">Voted:</span> {% for uv in l.users_voted.all %} <i class="fas fa-check-circle" aria-hidden="true"></i> {{ uv.username }}{% endfor %}</small></p>
+                                     {% for uv in l.users_voted.all %} <i class="fas fa-check-circle" aria-hidden="true"></i> {{ uv.username }}{% endfor %}
                                 {% endif %}
                             {% endif %}
-                        {% endfor %}
+                        {% endfor %}</small></p>
                     </div>
                 {% endfor %}
                 </div>
 
                 <h5 class="p-2 pl-3 rounded-top" id="resultsHeader" style="background:grey">3. <i class="fas fa-eye" aria-hidden="true"></i> Results</h5>
                 <div class="mb-2" id="resultsDiv" style="display:none">
+                    <p class="text-muted ml-2">Golly jolly! It's time to see the results of everyones voting...</p>
                     <button class="btn btn-primary btn-sm ml-4" id="voteResultsBtn">Reveal voting results!</button>
                 </div>
 
@@ -176,7 +182,7 @@
       </div>
       <div class="modal-body bg-dark">
       {% if not movienight.editable %} <p class="text-warning pl-2 pr-2">Because at least one movie list is already created, you can no longer change max number of movies users can nominate.</p> {% endif %}
-        <form class="form-horizontal" role="form" action="settings/" method="post">
+        <form class="form-horizontal" role="form" action="{% url 'mypage:movienight_event' movienight.pk %}" method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     <div class="col-sm-10">
@@ -235,7 +241,7 @@
         </button>
       </div>
       <div class="modal-body bg-dark text-light">
-        <h4>Are you sure you want to delete this event?</h4>
+        <p>Are you sure you want to delete this event?</p>
       </div>
       <div class="modal-footer bg-dark">
         <form method="post" action="{{ request.build_absolute_uri }}delete">
@@ -259,21 +265,27 @@
                 </button>
             </div>
             <div class="modal-body bg-dark">
-                <form class="form-horizontal" role="form" action="inviteuser/" method="post">
-                    {% csrf_token %}
-                    <div class="form-group">
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label class="control-label col-sm-12 text-muted">User to invite:</label>
                         <div class="col-sm-10">
-                            <label class="control-label col-sm-12 text-muted">User to invite:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="text" name="username" placeholder="Username..." value="">
+                            <input class="form-control" type="text" name="username" id="inputInviteUser" placeholder="Username..." value="">
+                            <div class="alert alert-warning mt-2" id="alertUserNotFound" style="display:none">
+                                <strong>User was not found.</strong>
+                            </div>
+                            <div class="alert alert-warning mt-2" id="alertUserAlreadyParticipant" style="display:none">
+                                <strong>User is already a participant in this event.</strong>
+                            </div>
+                            <div class="alert alert-warning mt-2" id="alertUserAlreadyInvited" style="display:none">
+                                <strong>User is already invited to this event.</strong>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-dark">
-                        <button class="btn btn-success" type="submit" name="action" value="inviteUser">Send invite</button>
-                        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-                    </div>
-                </form>
+                </div>
+                <div class="modal-footer bg-dark">
+                    <button class="btn btn-success" id="inviteUserBtn" type="button" name="action" value="inviteUser">Send invite</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -333,10 +345,10 @@
       </div>
       <div class="modal-body bg-dark text-light">
           {% if movienight.current_phase == 1 %}
-              <p>No one will be able to edit their nomination lists once you unlocks Phase 2 - Voting.</p>
-              <p>Continue?</p>
+            <p>No one will be able to edit their nomination lists once you unlocks Phase 2 - Voting.</p>
+            <p>Continue?</p>
           {% elif movienight.current_phase == 2 %}
-              <p>Phase 3 unlocks the button <button class="btn btn-warning">Reveal voting results!</button> for all users.
+              <p>Phase 3 unlocks the button <button class="btn btn-primary btn-sm">Reveal voting results!</button> for all users.
                 Clicking the button will reveal the final results of the voting.</p>
               <p>Continue?</p>
           {% elif movienight.current_phase == 3 %}
@@ -344,8 +356,55 @@
           {% endif %}
       </div>
       <div class="modal-footer bg-dark">
-        <button class="btn btn-success" id="nextPhaseBtn">Yes</button>
-        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+          {% if movienight.current_phase < 3 %}
+            <button class="btn btn-success" id="nextPhaseBtn">Yes</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+          {% else %}
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Info Modal ---->
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background:deepskyblue">
+      <div class="modal-header bg-dark" style="color:deepskyblue">
+        <h4 class="modal-title" id="exampleModalLabel">Info - The Creator Control Panel</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body bg-dark text-light p-4">
+          <p>
+              <button class="btn btn-secondary btn-sm"><i class="fas fa-cog" aria-hidden="true"></i></button>
+               This is your general event settings where you can set a description of the event, time & place, event
+               image, and also decide how many movies each participant gets to nominate.
+          </p>
+          <p>
+              <button class="btn btn-success btn-sm"><i class="fas fa-user-plus" aria-hidden="true"></i></button>
+               Invite a user to the event.
+          </p>
+          <p>
+              <button class="btn btn-danger btn-sm"><i class="fas fa-trash" aria-hidden="true"></i></button>
+               Delete the event.
+          </p>
+          <p>
+              <button class="btn btn-light btn-sm"><i class="fas fa-lock-open" aria-hidden="true"></i></button>
+               With this button, you unlock the next phase. There are three main phases, in order:
+               Nominate, Vote and Result. Once you advance from one phase to the next, the previous phase is no
+               longer available. Therefore, please make sure the other users are done with the current phase
+               before you advance.
+          </p>
+          <p class="lead">Have fun!</p>
+
+
+      </div>
+      <div class="modal-footer bg-dark">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -465,7 +524,7 @@
                 var text = $("#chatMessage").val();
                 console.log(text);
                 $.ajax({
-                    url : './savechatmsg/',
+                    url : '{% url "mypage:movienight_event" movienight.pk %}',
                     type : "POST",
                     dataType: "json",
                     data : { 'text': text, 'action': 'save_chat_message' }
@@ -477,6 +536,27 @@
                         scrollTop: $('#chatWindow')[0].scrollHeight
                     }, 800);
                     $("#chatMessage").val("");
+                });
+            });
+
+            $("#inviteUserBtn").click(function() {
+                var user = $("#inputInviteUser").val();
+                $.ajax({
+                   url : '.',
+                   type : 'POST',
+                   data : { 'action': 'invite_user', 'user': user }
+                }).done(function(response) {
+                   if(response.error) {
+                       if(response.error == 'userDoesNotExist') {
+                           $("#alertUserNotFound").fadeIn(200).fadeOut(5000);
+                       } else if(response.error == 'userAlreadyInvited') {
+                           $("#alertUserAlreadyInvited").fadeIn(200).fadeOut(5000);
+                       } else if(response.error == 'userAlreadyParticipant') {
+                           $("#alertUserAlreadyParticipant").fadeIn(200).fadeOut(5000);
+                       }
+                   } else {
+                       window.location.reload();
+                   }
                 });
             });
 

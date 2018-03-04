@@ -12,6 +12,13 @@
                         <h1 class="display-4" style="color:deepskyblue">Create New Account</h1>
                         <p class="lead text-muted">Join the fun! You don't want to feel left out do you?</p>
                         <hr class="my-4 bg-secondary">
+                        {% if messages %}
+                          <ul class="messages">
+                            {% for message in messages %}
+                              <li class="{{ message.tags }} text-danger">{{ message }}</li>
+                            {% endfor %}
+                          </ul>
+                        {% endif %}
                         {% if error_message %}
                             <p><strong>{{ error_message }}</strong></p>
                         {% endif %}
