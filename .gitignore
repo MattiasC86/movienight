@@ -6,3 +6,6 @@ mnmessages/__pycache__/
 db.sqlite3
 manage.py
 jquery-ui-1.12.1.custom/AUTHORS.txt
+mypage/static/mypage/style/.sass-cache/
+mypage/static/mypage/style/style.css.map
+mypage/__pycache__/
