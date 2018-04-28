@@ -17,9 +17,9 @@
 
     <div class="container">
         <div class="col-lg-12 mt-4">
-            <h1 style="color:deepskyblue">Your Movie List</h1>
-            <p class="text-muted">By <a href="/user/{{ user.username }}" style="color:limegreen">{{ user.username }}</a> for the event <a href="/movienightevent/{{ movienight.pk }}" style="color:deepskyblue">{{ movienight.title }}</a></p>
-            <p class="text-muted">Add a maximum of <span style="color:orange">{{ movienight.list_size }}</span> movies to your list. Once someone has voted on your list, you will no longer be able to edit it.</p>
+            <h1 class="text-movienight">Your Movie List</h1>
+            <p class="text-muted">By <a class="text-profile" href="/user/{{ user.username }}">{{ user.username }}</a> for the event <a class="text-movienight" href="/movienightevent/{{ movienight.pk }}">{{ movienight.title }}</a></p>
+            <p class="text-muted">Add a maximum of <span class="text-lists">{{ movienight.list_size }}</span> movies to your list. Once someone has voted on your list, you will no longer be able to edit it.</p>
             <hr class="bg-secondary">
         </div>
     </div>
@@ -66,14 +66,14 @@
                             <img class="img-fluid" id="resultPoster" src="" alt="">
                         </div>
                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
-                            <h1 style="color:deepskyblue" id="resultTitle"></h1>
+                            <h1 class="text-movienight" id="resultTitle"></h1>
                             <span class="text-muted">Release year: </span><span class="text-white" id="resultYear"></span>
                             <br><span class="text-muted">Director: </span><span class="text-white" id="resultDirector"></span>
                             <br><span class="text-muted">Plot:</span>
                             <p class="text-white" id="resultPlot"></p>
                             <br>
                             <button class="btn btn-success addMovieBtn" id="resultTitle">+ Add to list</button>
-                            <div class="alert alert-danger mt-3" id="alertMaxMovies" style="display:none">
+                            <div class="alert alert-danger mt-3" id="alertMaxMovies">
                                 <strong>Can't add movie!</strong> You have added the maximum number of movies for this event ({{ movienight.list_size }}).
                             </div>
                         </div>
@@ -81,13 +81,13 @@
                 </div>
 
                 <!-- Movie click info -->
-                <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="movieInfo" style="display:none">
+                <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" id="movieInfo">
                 <div class="row">
                     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
                         <img class="img-fluid" src="{{ movie.Poster }}" alt="" id="infoPoster">
                     </div>
                     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
-                        <h1 style="color:deepskyblue" id="infoTitle">{{ movie.Title }}</h1>
+                        <h1 class="text-movienight" id="infoTitle">{{ movie.Title }}</h1>
                         <span class="text-muted">Release year: </span><span class="text-white" id="infoYear">{{ movie.Year }}</span>
                         <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
                         <br><span class="text-muted">Plot:</span>
@@ -104,7 +104,7 @@
                         <div class="row">
                     {% for movie in movies %}
                             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 mt-3">
-                                <h6 style="color:deepskyblue">{{ movie.Title }} <span class="text-muted">({{ movie.Year }})</span></h6>
+                                <h6 class="text-movienight">{{ movie.Title }} <span class="text-muted">({{ movie.Year }})</span></h6>
                                 <img class="img-fluid" src="{{ movie.Poster }}" alt="">
                             <button class="btn btn-success addBacklogMultiChoiceBtn" id="{{ movie.Title }}">+ Add to backlog</button>
                             </div>

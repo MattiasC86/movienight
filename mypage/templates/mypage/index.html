@@ -4,10 +4,12 @@
 
 {% block body %}
 
-    <div class="container" style="background-color:#252830">
+    <div class="container">
         <div class="col-lg-12 p-3 text-center">
             <div class="m-1">
-                <h1 class="display-4 text-muted"><span style="color:orange">M</span><span style="color:dimgrey">ovie</span><span style="color:deepskyblue">N<span style="color:dimgrey">ight</span></span></h1>
+                <h1 class="display-4 text-muted" id="movienight-title">
+                    <span class="span-1">M</span><span class="span-2">ovie</span><span class="span-3">N</span><span class="span-4">ight</span>
+                </h1>
                 <p class="lead text-white">Simple and to the point for all you movie lovers!</p>
                 {% if not user.is_authenticated %}
                 <a class="btn btn-dark btn-lg" href="{% url 'mypage:login' %}" role="button">Log in!</a>
@@ -17,37 +19,37 @@
         </div>
 
     <div class="row">
-        <div class="card bg-dark mx-auto m-2" style="width: 22rem;height:23rem;border-width:1px;border-color:black">
-            <h4 class="text-center p-2" style="background-color:deepskyblue">MovieNight Events</h4>
+        <div class="card bg-dark" id="card-events">
+            <h4 class="text-center p-2">MovieNight Events</h4>
             <div class="card-body text-muted">
 
                   <p>Are you and your friends always fighting about which movies to watch? Well, this is sort of the core of MovieNight, let us help you!</p>
                   <p>Invite your friends to a MovieNight Event and let the votes decide!</p>
                   <p>The event will of course be saved and viewable on each participants profile page.</p>
-                  <a class="card-link" href="{% url 'mypage:movienight' %}" style="color:deepskyblue">Create new MovieNight Event</a>
+                  <a class="card-link" href="{% url 'mypage:movienight' %}">Create new MovieNight Event</a>
 
             </div>
         </div>
 
-        <div class="card bg-dark mx-auto m-2" style="width: 23rem;border-width:1px;border-color:black">
-            <h4 class="text-center p-2" style="background-color:deeppink;">Manage Your Backlog</h4>
+        <div class="card bg-dark" id="card-backlog">
+            <h4 class="text-center p-2">Manage Your Backlog</h4>
             <div class="card-body text-muted">
                   <p>Do you keep hearing about movies you'd like to watch some time,
                       only to have the memory of them escape into some black hole of forgetfulness?</p>
                   <p>Add the movie to your backlog so that you won't forget about it.</p>
                   <p>You can even set an "alarm" of sorts. Maybe the movie will be available in theaters
                       in two months and you want a reminder at that time? We'll send you an email to remind you :)</p>
-                <a class="card-link" href="{% url 'mypage:backlog' %}" style="color:deeppink">Edit your backlog</a>
+                <a class="card-link" href="{% url 'mypage:backlog' %}">Edit your backlog</a>
             </div>
         </div>
 
-        <div class="card bg-dark mx-auto m-2" style="width: 20rem;height:18rem;border-width:1px;border-color:black">
-            <h4 class="text-center p-2" style="background-color:orange">Make Your Own Lists</h4>
+        <div class="card bg-dark" id="card-lists">
+            <h4 class="text-center p-2">Make Your Own Lists</h4>
             <div class="card-body text-muted">
                   <p>A lover of movies AND lists? Welcome!</p>
                   <p>We offer the freedom to create your own lists.</p>
                   <p>You want to make a 'Top 10 ping pong movies ever' list? Go for it! :)</p>
-                <a class="card-link" href="{% url 'mypage:lists' %}" style="color:orange">Edit your lists</a>
+                <a class="card-link" href="{% url 'mypage:lists' %}">Edit your lists</a>
             </div>
         </div>
     </div>

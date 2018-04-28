@@ -8,4 +8,9 @@ manage.py
 jquery-ui-1.12.1.custom/AUTHORS.txt
 mypage/static/mypage/style/.sass-cache/
 mypage/static/mypage/style/style.css.map
+
 mypage/__pycache__/
+mypage/__pycache__/admin.cpython-36.pyc
+mypage/__pycache__/models.cpython-36.pyc
+mypage/__pycache__/urls.cpython-36.pyc
+mypage/__pycache__/views.cpython-36.pyc

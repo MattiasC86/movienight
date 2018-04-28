@@ -1,23 +1,133 @@
+/* TODO: Create .text-backlog classes etc for all theme colors */
+.text-profile {
+  color: limegreen; }
+
+.text-movienight {
+  color: deepskyblue; }
+
+.text-lists {
+  color: orange; }
+
+.text-red {
+  color: red; }
+
+.bg-grey {
+  background: grey; }
+
+.bg-movienight {
+  background: deepskyblue; }
+
 body {
-    background: #252830;
-}
+  background: #252830; }
 
-/*Index*/
-#movienight-title {
-    .span-1 {
-        color: orange;
-    }
-    .span-2 .span-4 {
-        color: dimgrey;
-    }
-    .span-3 {
-        color: deepskyblue;
-    }
-}
+.header-box {
+  padding: 7px 7px 7px 15px;
+  border-radius: 15px 15px 0 0; }
 
+.line-movienight-1 {
+  background: deepskyblue;
+  height: 1px; }
+
+#loadingIcon {
+  display: none; }
+
+#alertMovieNotFound {
+  display: none; }
+
+#movieSearchResult {
+  display: none; }
+
+h1#resultTitle {
+  color: deepskyblue; }
+
+#movieInfo {
+  display: none; }
+
+#alertUserNotFound {
+  display: none; }
+
+#alertMaxMovies {
+  display: none; }
+
+#alertUserAlreadyParticipant {
+  display: none; }
+
+#alertUserAlreadyInvited {
+  display: none; }
+
+#movieInfo {
+  display: none; }
+
+/* ------------ Index ------------ */
+#movienight-title .span-1 {
+  color: orange; }
+#movienight-title .span-2, #movienight-title .span-4 {
+  color: dimgrey; }
+#movienight-title .span-3 {
+  color: deepskyblue; }
+
+/*Cards*/
+.card, #card-events, #card-backlog, #card-lists {
+  border: 1px black;
+  margin: auto; }
+
+#card-events {
+  width: 22rem;
+  height: 23rem; }
+  #card-events h4 {
+    background-color: deepskyblue; }
+  #card-events a {
+    color: deepskyblue; }
+
+#card-backlog {
+  width: 23rem; }
+  #card-backlog h4 {
+    background-color: deeppink; }
+  #card-backlog a {
+    color: deeppink; }
+
+#card-lists {
+  width: 20rem;
+  height: 18rem; }
+  #card-lists h4 {
+    background-color: orange; }
+  #card-lists a {
+    color: orange; }
+
+/* ------------ Backlog ------------ */
+#backlog-main-header {
+  color: deeppink; }
+
+#multipleResultsBtn {
+  display: none; }
+
+#backlog-list-header {
+  color: deeppink; }
 
 /*
-!* The side navigation menu *!
+
+
+/* ------------ Profile ------------ */
+#newPostDiv {
+  display: none; }
+  #newPostDiv #inputContent {
+    resize: none;
+    overflow-x: hidden; }
+
+.blog-post {
+  background-color: #323239; }
+
+/* ------------ Movienight Event ------------ */
+#nominateDiv {
+  display: none; }
+
+#voteDiv {
+  display: none; }
+
+#resultsDiv {
+  display: none; }
+
+/* The side navigation menu *!
 .sidenav {
     height: 100%; !* 100% Full-height *!
     width: 0; !* 0 width - change this with JavaScript *!
@@ -66,3 +176,5 @@ body {
     .sidenav {padding-top: 15px;}
     .sidenav a {font-size: 18px;}
 }*/
+
+/*# sourceMappingURL=style.css.map */

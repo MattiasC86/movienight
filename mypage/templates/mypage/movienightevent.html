@@ -6,8 +6,8 @@
 
     <div class="container-flow">
         <div class="col-lg-12 mt-3 text-center">
-            <h1 class="mb-0" style="color:deepskyblue">{{ movienight.title }}</h1>
-            <p class="text-muted mt-0 mb-1">Created {{ movienight.creation_date }} by <a href="/user/{{ movienight.creator.username }}" style="color:limegreen">{{ movienight.creator.username }}</a></p>
+            <h1 class="mb-0 text-movienight">{{ movienight.title }}</h1>
+            <p class="text-muted mt-0 mb-1">Created {{ movienight.creation_date }} by <a class="text-profile" href="/user/{{ movienight.creator.username }}">{{ movienight.creator.username }}</a></p>
             {% if request.user in movienight.invited_users.all %}
                     <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#acceptInvModal"><i class="fas fa-check" aria-hidden="true"></i> Accept invitation</button>
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineInvModal"><i class="fas fa-times" aria-hidden="true"></i> Decline invitation</button>
@@ -24,7 +24,7 @@
             <!------------------ LEFT ---------------->
             <div class="col-lg-3 mb-4 mx-auto">
                 <div>
-                    <h5 class="bg-light p-2 pl-3 rounded-top"><i class="fas fa-info-circle" aria-hidden="true"></i> Info </h5>
+                    <h5 class="header-box bg-light"><i class="fas fa-info-circle" aria-hidden="true"></i> Info </h5>
                     <p class="text-muted ml-2 mt-0 mb-0">Description:</p>
                     <p class="text-light ml-2">{{ movienight.description }}</p>
                     <p class="text-muted ml-2 mt-0 mb-0">Time & place:</p>
@@ -35,37 +35,37 @@
 
                 <div class="mt-4">
                     <div>
-                        <h5 class="p-2 pl-3 rounded-top" style="background:limegreen"><i class="fas fa-users" aria-hidden="true"></i> Users</h5>
+                        <h5 class="header-box bg-light"><i class="fas fa-users" aria-hidden="true"></i> Users</h5>
                     </div>
                     <div class="row">
                         <div class="col-lg-6 mt-2">
                             <div>
-                                <p class="mb-0" style="color:limegreen"><i class="fas fa-thumbs-up"></i> PARTICIPANTS:</p>
+                                <p class="mb-0 text-profile"><i class="fas fa-thumbs-up"></i> PARTICIPANTS:</p>
                             </div>
                             {% for u in movienight.users.all %}
                                 <div>
-                                    <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue"><small>Creator</small></span> {% endif %}
+                                    <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span class="text-movienight"><small>Creator</small></span> {% endif %}
                                 </div>
                             {% endfor %}
                         </div>
                         <div class="col-lg-6">
                             {% if movienight.invited_users.all %}
                                 <div class="mt-2">
-                                    <p class="mb-0" style="color:limegreen"><i class="fas fa-address-card"></i> INVITED:</p>
+                                    <p class="mb-0 text-profile"><i class="fas fa-address-card"></i> INVITED:</p>
                                 </div>
                                 {% for u in movienight.invited_users.all %}
                                     <div>
-                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue"><small>Creator</small></span> {% endif %}
+                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span class="text-movienight"><small>Creator</small></span> {% endif %}
                                     </div>
                                 {% endfor %}
                             {% endif %}
                             {% if movienight.declined_users.all %}
                                 <div class="mt-2">
-                                    <p class="mb-0" style="color:red"><i class="fas fa-thumbs-down"></i> DECLINED:</p>
+                                    <p class="mb-0 text-red"><i class="fas fa-thumbs-down"></i> DECLINED:</p>
                                 </div>
                                 {% for u in movienight.declined_users.all %}
                                     <div>
-                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span style="color:deepskyblue"><small>Creator</small></span> {% endif %}
+                                        <a href="/user/{{ u.username }}" class="text-white ml-4">{{ u.username }}</a>{% if u.username == movienight.creator.username %} <span class="text-movienight"><small>Creator</small></span> {% endif %}
                                     </div>
                                 {% endfor %}
                             {% endif %}
@@ -113,8 +113,8 @@
                     </div>
                 {% endif %}
 
-                <h5 class="p-2 pl-3 rounded-top" id="nominateHeader" style="background:grey">1. <i class="fas fa-list" aria-hidden="true"></i> Nominate</h5>
-                <div class="mb-2" id="nominateDiv" style="display:none">
+                <h5 class="header-box bg-grey" id="nominateHeader">1. <i class="fas fa-list" aria-hidden="true"></i> Nominate</h5>
+                <div class="mb-2" id="nominateDiv">
                     <p class="text-muted ml-2">Let's begin! Make a list of movies that you would like to nominate for this event.</p>
                     {% if request.user in movienight.users.all %}
                         <a href="{{ request.user.username }}/" type="button" class="ml-2 btn btn-warning btn-sm">Edit my nominations</a>
@@ -130,7 +130,7 @@
 
                     <p> My list is complete</p>
                     <p class="text-muted ml-2 mt-1 mb-0"><small>Done with nominations list:</small></p>
-                    <p class="ml-2" id="usersNominationsDone" style="color:limegreen">
+                    <p class="ml-2 text-profile" id="usersNominationsDone">
                         {% for l in movie_lists %}
                             {% if l.marked_done %}
                                 <span id="{{ l.user.username }}"><small><i class="fas fa-check-circle" aria-hidden="true"></i> {{ l.user.username }} </small></span>
@@ -139,12 +139,12 @@
                     </p>
                 </div>
 
-                <h5 class="p-2 pl-3 rounded-top" id="voteHeader" style="background:grey">2. <i class="fas fa-sort-numeric-down" aria-hidden="true"></i> Vote</h5>
-                <div class="mb-2" id="voteDiv" style="display:none">
+                <h5 class="header-box bg-grey" id="voteHeader">2. <i class="fas fa-sort-numeric-down" aria-hidden="true"></i> Vote</h5>
+                <div class="mb-2" id="voteDiv">
                     <p class="text-muted ml-2">Time to vote! Click on a list below to bring up the movies it contains and to cast your vote. And yes, you are supposed to vote on your own list too.</p>
                 {% for u in movienight.users.all %}
                     <div class="ml-2">
-                        <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a><p class="ml-2" style="color:limegreen"><small><span class="text-muted">Voted:</span>
+                        <a href="vote/{{ u.username }}/" class="text-white">Movie list by {{ u.username }}</a><p class="ml-2 text-profile"><small><span class="text-muted">Voted:</span>
                         {% for l in movie_lists %}
                             {% if u.username == l.user.username %}
                                 {% if l.users_voted.all %}
@@ -156,8 +156,8 @@
                 {% endfor %}
                 </div>
 
-                <h5 class="p-2 pl-3 rounded-top" id="resultsHeader" style="background:grey">3. <i class="fas fa-eye" aria-hidden="true"></i> Results</h5>
-                <div class="mb-2" id="resultsDiv" style="display:none">
+                <h5 class="header-box bg-grey" id="resultsHeader">3. <i class="fas fa-eye" aria-hidden="true"></i> Results</h5>
+                <div class="mb-2" id="resultsDiv">
                     <p class="text-muted ml-2">Golly jolly! It's time to see the results of everyones voting...</p>
                     <button class="btn btn-primary btn-sm ml-4" id="voteResultsBtn">Reveal voting results!</button>
                 </div>
@@ -173,8 +173,8 @@
     <!-- Settings Modal -->
 <div class="modal fade" id="eventSettingsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h4 class="modal-title" id="exampleModalLabel">Settings</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -233,8 +233,8 @@
 <!-- Delete Event Modal -->
 <div class="modal fade" id="deleteEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h5 class="modal-title" id="exampleModalLabel">Delete event</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -257,8 +257,8 @@
 <!-- Invite User Modal ---->
 <div class="modal fade" id="inviteUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="background:deepskyblue">
-            <div class="modal-header bg-dark" style="color:deepskyblue">
+        <div class="modal-content bg-movienight">
+            <div class="modal-header bg-dark text-movienight">
                 <h5 class="modal-title" id="exampleModalLabel">Invite User</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -270,13 +270,13 @@
                         <label class="control-label col-sm-12 text-muted">User to invite:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="username" id="inputInviteUser" placeholder="Username..." value="">
-                            <div class="alert alert-warning mt-2" id="alertUserNotFound" style="display:none">
+                            <div class="alert alert-warning mt-2" id="alertUserNotFound">
                                 <strong>User was not found.</strong>
                             </div>
-                            <div class="alert alert-warning mt-2" id="alertUserAlreadyParticipant" style="display:none">
+                            <div class="alert alert-warning mt-2" id="alertUserAlreadyParticipant">
                                 <strong>User is already a participant in this event.</strong>
                             </div>
-                            <div class="alert alert-warning mt-2" id="alertUserAlreadyInvited" style="display:none">
+                            <div class="alert alert-warning mt-2" id="alertUserAlreadyInvited">
                                 <strong>User is already invited to this event.</strong>
                             </div>
                         </div>
@@ -294,8 +294,8 @@
 <!-- Accept Invitation Modal ---->
 <div class="modal fade" id="acceptInvModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h4 class="modal-title" id="exampleModalLabel">Confirm Accept</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -315,8 +315,8 @@
 <!-- Decline Invitation Modal ---->
 <div class="modal fade" id="declineInvModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h4 class="modal-title" id="exampleModalLabel">Confirm Decline</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -336,8 +336,8 @@
 <!-- Next Phase Modal ---->
 <div class="modal fade" id="nextPhaseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h4 class="modal-title" id="exampleModalLabel">Next Phase</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -371,8 +371,8 @@
 <!-- Info Modal ---->
 <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h4 class="modal-title" id="exampleModalLabel">Info - The Creator Control Panel</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -413,8 +413,8 @@
 <!-- Unlock Result Button Modal ---->
 <div class="modal fade" id="unlockResultBtnModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content bg-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h4 class="modal-title" id="exampleModalLabel">Unlock 'Voting results' button</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>

@@ -10,8 +10,8 @@
 
     <div class="container">
         <div class="col-lg-12 mt-4">
-            <h1 style="color:deepskyblue">{{ movienight.title }} Movie List</h1>
-            <p class="text-muted">By <a href="/user/{{ list_user.username }}" style="color:limegreen">{{ list_user.username }}</a> for the event <a href="/movienightevent/{{ movienight.pk }}" style="color:deepskyblue">{{ movienight.title }}</a></p>
+            <h1 class="text-movienight">{{ movienight.title }} Movie List</h1>
+            <p class="text-muted">By <a class="text-profile" href="/user/{{ list_user.username }}">{{ list_user.username }}</a> for the event <a class="text-movienight" href="/movienightevent/{{ movienight.pk }}">{{ movienight.title }}</a></p>
             {% if voted %}
                 <p class="text-light">Your votes:</p>
                 {% for v in voted %}
@@ -43,13 +43,13 @@
             </div>
 
             <!-- Movie info -->
-            <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7" id="movieInfo" style="display:none">
+            <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7" id="movieInfo">
                 <div class="row">
                     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
                         <img class="img-fluid" src="{{ movie.Poster }}" alt="" id="infoPoster">
                     </div>
                     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
-                        <h1 style="color:deepskyblue" id="infoTitle">{{ movie.Title }}</h1>
+                        <h1 class="text-movienight" id="infoTitle">{{ movie.Title }}</h1>
                         <span class="text-muted">Release year: </span><span class="text-white" id="infoYear">{{ movie.Year }}</span>
                         <br><span class="text-muted">Director: </span><span class="text-white" id="infoDirector">{{ movie.Director}}</span>
                         <br><span class="text-muted">Plot:</span>
@@ -64,8 +64,8 @@
     <!-- Confirm vote modal -->
     <div class="modal fade" id="confirmVoteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background:deepskyblue">
-      <div class="modal-header bg-dark" style="color:deepskyblue">
+    <div class="modal-content text-movienight">
+      <div class="modal-header bg-dark text-movienight">
         <h5 class="modal-title" id="exampleModalLabel">Confirm vote</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>

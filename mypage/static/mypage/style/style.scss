@@ -1,0 +1,173 @@
+/* TODO: Create .text-backlog classes etc for all theme colors */
+
+$background-color: #252830;
+$backlog-color: deeppink;
+$blog-post-color: #323239;
+$lists-color: orange;
+$movienight-color: deepskyblue;
+$profile-color: limegreen;
+
+.text-profile { color: $profile-color }
+.text-movienight { color: $movienight-color }
+.text-lists { color: $lists-color }
+.text-red { color: red; }
+
+.bg-grey { background: grey; }
+.bg-movienight { background: $movienight-color }
+
+body {
+    background: $background-color;
+}
+
+.header-box {
+    padding: 7px 7px 7px 15px;
+    border-radius: 15px 15px 0 0;
+}
+
+.line-movienight-1 {
+    background: $movienight-color;
+    height: 1px;
+}
+
+#loadingIcon { display: none; }
+#alertMovieNotFound { display: none; }
+#movieSearchResult { display: none; }
+h1#resultTitle { color: $movienight-color; }
+#movieInfo { display: none; }
+
+#alertUserNotFound { display: none; }
+#alertMaxMovies { display: none; }
+#alertUserAlreadyParticipant { display: none; }
+#alertUserAlreadyInvited { display: none; }
+
+
+#movieInfo { display:none; }
+
+/* ------------ Index ------------ */
+
+#movienight-title {
+    .span-1 {
+        color: $lists-color;
+    }
+    .span-2, .span-4 {
+        color: dimgrey;
+    }
+    .span-3 {
+        color: $movienight-color;
+    }
+}
+
+/*Cards*/
+.card {
+    border: 1px black;
+    margin: auto;
+}
+#card-events {
+    @extend .card;
+    h4 { background-color: $movienight-color; }
+    a { color: $movienight-color; }
+    width: 22rem;
+    height:23rem;
+}
+#card-backlog {
+    @extend .card;
+    h4 { background-color: $backlog-color; }
+    a { color: $backlog-color; }
+    width: 23rem;
+}
+#card-lists {
+    @extend .card;
+    h4 { background-color: $lists-color; }
+    a { color: $lists-color; }
+    width: 20rem;
+    height:18rem;
+}
+
+
+/* ------------ Backlog ------------ */
+
+#backlog-main-header { color: $backlog-color; }
+#multipleResultsBtn { display: none; }
+#backlog-list-header { color: $backlog-color; }
+
+/*
+
+
+/* ------------ Profile ------------ */
+
+#newPostDiv {
+    display: none;
+    #inputContent {
+        resize: none;
+        overflow-x: hidden;
+    }
+}
+
+.blog-post {
+    background-color: $blog-post-color;
+}
+
+
+/* ------------ Movienight Event ------------ */
+
+#nominateDiv { display: none; }
+#voteDiv { display: none; }
+#resultsDiv { display: none; }
+
+
+
+
+
+
+
+
+
+/* The side navigation menu *!
+.sidenav {
+    height: 100%; !* 100% Full-height *!
+    width: 0; !* 0 width - change this with JavaScript *!
+    position: fixed; !* Stay in place *!
+    z-index: 1; !* Stay on top *!
+    top: 0; !* Stay at the top *!
+    left: 0;
+    background-color: #111; !* Black*!
+    overflow-x: hidden; !* Disable horizontal scroll *!
+    padding-top: 60px; !* Place content 60px from the top *!
+    transition: 0.5s; !* 0.5 second transition effect to slide in the sidenav *!
+}
+
+!* The navigation menu links *!
+.sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+!* When you mouse over the navigation links, change their color *!
+.sidenav a:hover {
+    color: #f1f1f1;
+}
+
+!* Position and style the close button (top right corner) *!
+.sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+!* Style page content - use this if you want to push the page content to the right when you open the side navigation *!
+#main {
+    transition: margin-left .5s;
+    padding: 20px;
+}
+
+!* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) *!
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+}*/
