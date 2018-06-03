@@ -17,6 +17,11 @@
 .bg-movienight {
   background: deepskyblue; }
 
+.vl {
+  border-left: 1px solid white;
+  top: 50%;
+  margin: 12px 25px 12px 25px; }
+
 body {
   background: #252830; }
 

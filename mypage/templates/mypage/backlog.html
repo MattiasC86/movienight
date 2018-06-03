@@ -85,7 +85,6 @@ $(function() {
 
     // Delete from backlog
     $(".delBacklogBtn").click(function() {
-        var backlogToDelete =  $(this).attr('name');
         console.log('clicked to remove backlog with movie.pk ' + backlogToDelete);
 
         $.ajax({

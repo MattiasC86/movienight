@@ -3,8 +3,8 @@
 
 {% block body %}
 
-    <div class="container text-center">
-        <div class="col-lg-12 mt-3">
+    <div class="container text-center mt-3">
+
             <h1 class="text-profile">{{ user.get_username }}</h1>
             <p class="text-muted">MovieNight member since {{ user.date_joined }}</p>
             <span class="text-white"><span style="color:deepskyblue">ACTIVE MOVIENIGHT EVENTS:</span> {{ active_movienights.count }}</span>
@@ -13,38 +13,50 @@
             <span class="text-muted ml-2 mr-2">-</span>
             <span class="text-white"><span style="color:orange">LISTS CREATED:</span> 0</span>
             <hr class="bg-secondary">
-        </div>
 
-        <div class="row col-lg-12">
-            <div class="col-lg-6">
-                <button class="btn btn-light btn-sm mr-auto" id="newPostBtn">+New post</button>
+            <nav class="header-box navbar navbar-expand-lg navbar-dark bg-dark mx-auto col-lg-6">
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarProfile" aria-controls="navbarProfile" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarProfile">
+                <ul class="navbar-nav mx-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">POSTS</a>
+                  </li>
+                    <div class="vl"></div>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">BACKLOG</a>
+                  </li>
+                      <div class="vl"></div>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">LISTS</a>
+                  </li>
+                      <div class="vl"></div>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">FRIENDS</a>
+                  </li>
+                </ul>
+              </div>
+            </nav>
+
+            <button class="btn btn-light btn-sm mt-3" id="newPostBtn">+New post</button>
+
+            <div class="col-lg-8 mt-3 mx-auto" id="newPostDiv">
+                <input class="form-control" id="inputTitle" type="text" placeholder="Title">
+                <textarea class="form-control mt-1" id="inputContent" cols="35" rows="7" name="" placeholder="Content"></textarea>
+                <div>
+                    <button class="btn btn-success btn mt-2" id="savePostBtn">Save post</button>
+                    <button class="btn btn-danger btn mt-2" id="cancelPostBtn">Cancel</button>
+                </div>
             </div>
-            <div class="col-lg-6">
-                <button class="btn btn-light btn-sm mr-auto" id="newPostBtn">Backlog</button>
-                <button class="btn btn-light btn-sm mr-auto" id="newPostBtn">Lists</button>
-            </div>
-        </div>
 
-
-        <div class="col-lg-6 mt-3" id="newPostDiv">
-            <input class="form-control" id="inputTitle" type="text" placeholder="Title">
-            <textarea class="form-control mt-1" id="inputContent" cols="35" rows="7" name="" placeholder="Content"></textarea>
-            <div class="text-right">
-                <button class="btn btn-success btn mt-2" id="savePostBtn">Save post</button>
-                <button class="btn btn-danger btn mt-2" id="cancelPostBtn">Cancel</button>
-            </div>
-
-        </div>
-
-        <div class="row col-lg-12 mt-4">
-
-            <div class="col-lg-6">
+            <div class="col-lg-8 mx-auto mt-3">
                 <h5 class="lead text-dark bg-light header-box"><strong>Posts</strong></h5>
                 <div id="blogPosts">
 
                 </div>
             </div>
-        </div>
+
     </div>
 
     <!-- Delete blog post modal -->
@@ -82,14 +94,14 @@
                                 '<hr class="bg-secondary">' +
                             '</div>' +
                             '<div class="col-lg-l2">' +
-                                '<div class="text-light text-left">' +
+                                '<div class="text-light text-left pl-3 pr-3">' +
                                     '<p id="postContent" style="white-space: pre-wrap;">{{ b.content|linebreaksbr }}</p>' +
                                 '</div>' +
                                 '<hr class="bg-secondary">' +
                             '</div>' +
                             '<div class="row">' +
                                 '<div class="col-sm-9 col-lg-9 text-left">' +
-                                    '<a href="#" style="text-decoration: none">Comments</a>' +
+                                    '<a class="pl-3" href="#" style="text-decoration: none">Comments</a>' +
                                 '</div>' +
                                 '<div class="col-sm-3 col-lg-3">' +
                                     '<button class="btn btn-danger btn-sm deletePostPrepareBtn" id="" name="{{ b.pk }}" data-toggle="modal" data-target="#deleteBlogPostModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>' +
@@ -115,14 +127,14 @@
                                 '<hr class="bg-secondary">' +
                             '</div>' +
                             '<div class="col-lg-l2">' +
-                                '<div class="text-light">' +
+                                '<div class="text-light text-left pl-3 pr-3">' +
                                     '<p id="postContent" style="white-space: pre-wrap;">' + post.content + '</p>' +
                                 '</div>' +
                                 '<hr class="bg-secondary">' +
                             '</div>' +
                             '<div class="row">' +
-                                '<div class="col-sm-9 col-lg-9">' +
-                                    '<a href="#" style="text-decoration: none">Comments</a>' +
+                                '<div class="col-sm-9 col-lg-9 text-left">' +
+                                    '<a class="pl-3" href="#" style="text-decoration: none">Comments</a>' +
                                 '</div>' +
                                 '<div class="col-sm-3 col-lg-3">' +
                                     '<button class="btn btn-danger btn-sm deletePostPrepareBtn" name="' + post.pk + '" data-toggle="modal" data-target="#deleteBlogPostModal"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>' +

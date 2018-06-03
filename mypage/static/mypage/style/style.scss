@@ -15,6 +15,12 @@ $profile-color: limegreen;
 .bg-grey { background: grey; }
 .bg-movienight { background: $movienight-color }
 
+.vl {
+    border-left: 1px solid white;
+    top:50%;
+    margin: 12px 25px 12px 25px;
+}
+
 body {
     background: $background-color;
 }
